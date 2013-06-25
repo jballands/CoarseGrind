@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 #
 # CoarseGrind: The automated Virginia Tech course grinding script.
 # (C) 2013 All rights reserved. Programmed by Jonathan Ballands.
