@@ -29,7 +29,7 @@ jonathanballands.me/projects/coarsegrind.html
 ~-~- STARTING COARSEGRIND FOR THE FIRST TIME -~-~
 
 (The asterisk (*) indicates that you only have to start at this point if you have
-previous started CoarseGrind to reopen it.)
+use CoarseGrind before.)
 
 A) For hardcore Python developers or general nerds:
    
