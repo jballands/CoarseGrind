@@ -19,17 +19,17 @@ python.org
 ~-~- DISCLAIMER -~-~
 
 I am NOT responsible for whether or not you get into your class using this tool!
-CoarseGrind can in no way guarantee that you will be added to your class; it can
+CoarseGrind can in no way guarantee that you will be added to your class! It can
 only increase your chances! Use CoarseGrind at your own risk!
 
 For more information about CoarseGrind, visit:
-jonathanballands.me/portfolio/coarsegrind.html
+jonathanballands.me/projects/coarsegrind.html
 
 
 ~-~- STARTING COARSEGRIND FOR THE FIRST TIME -~-~
 
 (The asterisk (*) indicates that you only have to start at this point if you have
-previous started CoarseGrind.)
+use CoarseGrind before.)
 
 A) For hardcore Python developers or general nerds:
    
