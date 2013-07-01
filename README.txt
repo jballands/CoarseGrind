@@ -11,6 +11,11 @@ This folder should have 4 files (including this readme):
 3) coarsegrind.py
 4) README.txt
 
+CoarseGrind was created by a Hokie, for other Hokies. This means that CoarseGrind
+only works for Virginia Tech students. If you would like to implement a version of
+CoarseGrind for your school, feel free to fork this repository. If you are a Hokie
+and would like to contribute to CoarseGrind, feel free to submit a pull request.
+
 You must have Python installed on your machine in order to use
 CoarseGrind. For more information, visit:
 python.org
@@ -23,7 +28,7 @@ CoarseGrind can in no way guarantee that you will be added to your class! It can
 only increase your chances! Use CoarseGrind at your own risk!
 
 For more information about CoarseGrind, visit:
-jonathanballands.me/projects/coarsegrind.html
+jonathanballands.me/portfolio/coarsegrind.html
 
 
 ~-~- STARTING COARSEGRIND FOR THE FIRST TIME -~-~
