@@ -34,7 +34,7 @@ jonathanballands.me/portfolio/coarsegrind.html
 ~-~- STARTING COARSEGRIND FOR THE FIRST TIME -~-~
 
 (The asterisk (*) indicates that you only have to start at this point if you have
-use CoarseGrind before.)
+used CoarseGrind before.)
 
 A) For hardcore Python developers or general nerds:
    

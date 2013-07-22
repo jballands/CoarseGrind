@@ -557,9 +557,7 @@ class CGGrinder(threading.Thread):
 # MAIN
 def main():
 
-	print '\n~ COARSEGRIND ~\nThe automated Virginia Tech course grinding script.\n---------------------------------------------------\n(C)2013 Jonathan Ballands, Version 0.1\n'
-
-	print 'COARSEGRIND MAY STILL CONTAIN BUGS.\nIf you encounter a bug, email jballands@gmail.com\n'
+	print '\n~ COARSEGRIND ~\nThe automated Virginia Tech course grinding script.\n---------------------------------------------------\n(C)2013 Jonathan Ballands, v0.1\n'
 
 	# Init.
 	client = CGClient()
