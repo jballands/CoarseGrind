@@ -14,7 +14,7 @@
 #
 
 from bs4 import BeautifulSoup
-import mechanize, sys, re, getpass, time, html5lib, threading
+import mechanize, sys, re, getpass, time, html5lib, threading, argparse
 
 # The global grinding list.
 grinds = []
@@ -22,6 +22,62 @@ time_check = 30
 
 # Processes input for CoarseGrind.
 class CGProcessor:
+
+	def run_normally(self):
+		print '\n~ COARSEGRIND ~\nThe automated Virginia Tech course grinding script.\n---------------------------------------------------\n(C)2013 Jonathan Ballands, Version 0.2\n'
+
+		print 'COARSEGRIND MAY STILL CONTAIN BUGS.\nIf you encounter a bug, email jballands@gmail.com\n'
+
+		# Init.
+		client = CGClient()
+
+		# Try and login.
+		ok = 0
+		credientials = 0
+		while (ok == 0):
+
+			credientials = self.present_login()
+			ok = client.attempt_login(credientials[0], credientials[1])
+
+		# More init.
+		dumb_client = CGDumbClient()
+		dumb_client.inititalize(credientials[0], credientials[1])
+		grinding_thread = CGGrinder(client)
+		grinding_thread.start()
+
+		# Runtime loop.
+		ok = 0
+		while (ok == 0):
+
+			option = processor.choose_command()
+
+			if option == 'add':
+				dumb_client.check_availability()
+
+			elif option == 'jobs':
+				print '\n'
+				self.print_jobs()
+				print '\n'
+
+			elif option == 'quit':
+				if (len(grinds) > 0):
+					answer = processor.quit_prompt()
+					if (answer == 0):
+						continue
+				grinding_thread.stop()
+				ok = 1
+
+			elif option == 'help':
+				self.help_prompt()
+
+			elif option == 'kill':
+				self.kill_job()
+
+			elif option == 'checkrate':
+				self.change_rate()
+
+		# Done.
+		return
 
 	def help_prompt(self):
 
@@ -434,7 +490,7 @@ class CGDumbClient:
 		this_link = list(self.worker.links(text_regex = 'Timetable of Classes'))[0]
 		self.worker.follow_link(this_link)
 
-		print '...done\n'
+		print 'Ready'
 
 		self.ready = True
 
@@ -541,7 +597,7 @@ class CGGrinder(threading.Thread):
 			for x in range (0, len(grinds)):
 
 				# Done?
-				if ((grinds[x])[3] == 'DONE: Check your schedule'):
+				if ((grinds[x])[3] == 'DONE! Check your schedule!'):
 					continue
 
 				self.client.navigate_to_schedule()
@@ -550,7 +606,7 @@ class CGGrinder(threading.Thread):
 				if (status == 1):
 					self.client.navigate_to_dropadd((grinds[x])[2])
 					self.client.add_class((grinds[x])[1])
-					(grinds[x])[3] = 'DONE: Check your schedule'
+					(grinds[x])[3] = 'DONE! Check your schedule!'
 
 				# Quit?
 				if self.stop_event.isSet():
@@ -559,61 +615,27 @@ class CGGrinder(threading.Thread):
 # MAIN
 def main():
 
-	print '\n~ COARSEGRIND ~\nThe automated Virginia Tech course grinding script.\n---------------------------------------------------\n(C)2013 Jonathan Ballands, Version 0.1\n'
+	input_file = ''
+	doubleshot_mode = False
+	
+	try:
+		opts, args = getopt.getopt(argv,"hd:v",["doubleshot="])
+	except getopt.GetoptError:
+		print 'coarsegrind(.py) -h -d|--doubleshot <config_file>\n-h: See this help prompt.\n-e|--espresso: Run CoarseGrind in \'DoubleShot\' mode.'
+      	exit(1)
 
-	print 'COARSEGRIND MAY STILL CONTAIN BUGS.\nIf you encounter a bug, email jballands@gmail.com\n'
+    for o, a in opts:
+        if o in ("-h", "--help"):
+            print 'coarsegrind(.py) -h -d|--doubleshot <config_file>\n-h: See this help prompt.\n-e|--espresso: Run CoarseGrind in \'DoubleShot\' mode.'
+      		exit(1)
+        elif o in ("-d", "--doubleshot"):
+            input_file = a
+            doubleshot_mode = True
+        else:
+            assert False, "Unhandled option"
 
-	# Init.
-	client = CGClient()
-	processor = CGProcessor()
-
-	# Try and login.
-	ok = 0
-	credientials = 0
-	while (ok == 0):
-
-		credientials = processor.present_login()
-		ok = client.attempt_login(credientials[0], credientials[1])
-
-	# More init.
-	dumb_client = CGDumbClient()
-	dumb_client.inititalize(credientials[0], credientials[1])
-	grinding_thread = CGGrinder(client)
-	grinding_thread.start()
-
-	# Runtime loop.
-	ok = 0
-	while (ok == 0):
-
-		option = processor.choose_command()
-
-		if option == 'add':
-			dumb_client.check_availability()
-
-		elif option == 'jobs':
-			print '\n'
-			processor.print_jobs()
-			print '\n'
-
-		elif option == 'quit':
-			if (len(grinds) > 0):
-				answer = processor.quit_prompt()
-				if (answer == 0):
-					continue
-			grinding_thread.stop()
-			ok = 1
-
-		elif option == 'help':
-			processor.help_prompt()
-
-		elif option == 'kill':
-			processor.kill_job()
-
-		elif option == 'checkrate':
-			processor.change_rate()
-
-	# Done.
-	return
+    if (!doubleshot_mode):
+    	CGProcessor.
 
 if __name__ == "__main__":
     main()
