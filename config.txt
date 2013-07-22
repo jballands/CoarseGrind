@@ -1,0 +1,11 @@
+// This is the config file for CoarseGrind v0.2 with DoubleShot.
+// Type the appropriate credential immediately after the arrow.
+//
+// config.txt for DoubleShot
+//
+
+username>jonathan
+
+password>poop
+
+crn>12345

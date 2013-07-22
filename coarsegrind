@@ -14,7 +14,7 @@
 #
 
 from bs4 import BeautifulSoup
-import mechanize, sys, re, getpass, time, html5lib, threading, argparse
+import mechanize, sys, re, getpass, time, html5lib, threading, getopt
 
 # The global grinding list.
 grinds = []
@@ -612,30 +612,72 @@ class CGGrinder(threading.Thread):
 				if self.stop_event.isSet():
 					break
 
+# DOUBLESHOT MODE
+def doubleshot_mode(input_file):
+
+	with open(input_file) as f:
+		
+		username = ''
+		password = ''
+		crn = ''
+
+		content = f.readlines()
+		for line in content:
+			if line.startswith('//'):
+				continue
+			elif line.startswith('username>'):
+				username = re.split('(?=username>)', line)
+			elif line.startswith('password>'):
+				password = re.split('(?=password>)', line)
+			elif line.startswith('crn>'):
+				crn = re.split('(?=crn>)', line)
+			else:
+				continue
+
+		print username
+		print password
+		print crn
+		return
+
 # MAIN
-def main():
+def main(argv):
+
+	# Make a CGProcessor.
+	processor = CGProcessor()
+
+	if (len(argv) < 2):
+		processor.run_normally()
+		return
+	else:
+		argv = sys.argv[1:]
 
 	input_file = ''
-	doubleshot_mode = False
-	
+	is_doubleshot = False
+
 	try:
 		opts, args = getopt.getopt(argv,"hd:v",["doubleshot="])
+
+		for o, a in opts:
+		    if o in ("-h", "--help"):
+		    	print '\ncoarsegrind -h -d|--doubleshot <config_file>\n-h: See this help prompt.\n-d|--doubleshot: Run CoarseGrind in \'DoubleShot\' mode.\n'
+		      	exit(1)
+		    elif o in ("-d", "--doubleshot"):
+		        input_file = a
+		        is_doubleshot = True
+		    else:
+		        assert False, "Unhandled option"
+
+		if (is_doubleshot is False):
+		    print 'Poop'
+		    processor.run_normally()
+		    return
+		else:
+		    doubleshot_mode(input_file)
+		    return
+
 	except getopt.GetoptError:
 		print 'coarsegrind(.py) -h -d|--doubleshot <config_file>\n-h: See this help prompt.\n-e|--espresso: Run CoarseGrind in \'DoubleShot\' mode.'
       	exit(1)
 
-    for o, a in opts:
-        if o in ("-h", "--help"):
-            print 'coarsegrind(.py) -h -d|--doubleshot <config_file>\n-h: See this help prompt.\n-e|--espresso: Run CoarseGrind in \'DoubleShot\' mode.'
-      		exit(1)
-        elif o in ("-d", "--doubleshot"):
-            input_file = a
-            doubleshot_mode = True
-        else:
-            assert False, "Unhandled option"
-
-    if (!doubleshot_mode):
-    	CGProcessor.
-
 if __name__ == "__main__":
-    main()
+    main(sys.argv[0:])
