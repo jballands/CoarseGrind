@@ -24,9 +24,9 @@ time_check = 30
 class CGProcessor:
 
 	def run_normally(self):
-		print '\n~ COARSEGRIND ~\nThe automated Virginia Tech course grinding script.\n---------------------------------------------------\n(C)2013 Jonathan Ballands, Version 0.2\n'
+		print '\n~ COARSEGRIND ~\nThe automated Virginia Tech course grinding script.\n---------------------------------------------------\n(C)2013 Jonathan Ballands, v0.2\n'
 
-		print 'COARSEGRIND MAY STILL CONTAIN BUGS.\nIf you encounter a bug, email jballands@gmail.com\n'
+		print 'Starting normally...\n'
 
 		# Init.
 		client = CGClient()
@@ -49,7 +49,7 @@ class CGProcessor:
 		ok = 0
 		while (ok == 0):
 
-			option = processor.choose_command()
+			option = self.choose_command()
 
 			if option == 'add':
 				dumb_client.check_availability()
@@ -61,7 +61,7 @@ class CGProcessor:
 
 			elif option == 'quit':
 				if (len(grinds) > 0):
-					answer = processor.quit_prompt()
+					answer = self.quit_prompt()
 					if (answer == 0):
 						continue
 				grinding_thread.stop()
@@ -613,31 +613,43 @@ class CGGrinder(threading.Thread):
 					break
 
 # DOUBLESHOT MODE
-def doubleshot_mode(input_file):
+def doubleshot_mode(input_file, processor):
 
+	print '\n~ COARSEGRIND ~\nThe automated Virginia Tech course grinding script.\n---------------------------------------------------\n(C)2013 Jonathan Ballands, v0.2\n'
+	print 'Starting in DoubleShot mode, using ' + input_file + ' as config...\n'
+
+	username = ''
+	password = ''
+	crn = ''
+
+	# Match 0 to many spaces plus sought string.
+	username_regex = re.compile('\S*username>')
+	password_regex = re.compile('\S*password>')
+	crn_regex = re.compile('\S*crn>')
+	comment_regex = re.compile('\S*//')
+
+	# Read the file.
 	with open(input_file) as f:
-		
-		username = ''
-		password = ''
-		crn = ''
 
 		content = f.readlines()
 		for line in content:
-			if line.startswith('//'):
+			if re.match(comment_regex ,line):
 				continue
-			elif line.startswith('username>'):
-				username = re.split('(?=username>)', line)
-			elif line.startswith('password>'):
-				password = re.split('(?=password>)', line)
-			elif line.startswith('crn>'):
-				crn = re.split('(?=crn>)', line)
+			elif re.match(username_regex, line):
+				username = re.split(username_regex, line)
+			elif re.match(password_regex, line):
+				password = re.split(password_regex, line)
+			elif re.match(crn_regex, line):
+				crn = re.split(crn_regex, line)
 			else:
 				continue
 
-		print username
-		print password
-		print crn
-		return
+	# Parse from spliter.
+	username = re.split('\n', username[1])[0]
+	password = re.split('\n', password[1])[0]
+	crn = re.split('\n', crn[1])[0]
+
+	print 'Preparing...\nUsername: ' + username + '\nCRN: ' + crn + '\nOne moment please...'
 
 # MAIN
 def main(argv):
@@ -668,11 +680,10 @@ def main(argv):
 		        assert False, "Unhandled option"
 
 		if (is_doubleshot is False):
-		    print 'Poop'
 		    processor.run_normally()
 		    return
 		else:
-		    doubleshot_mode(input_file)
+		    doubleshot_mode(input_file, processor)
 		    return
 
 	except getopt.GetoptError:
