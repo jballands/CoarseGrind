@@ -4,7 +4,7 @@
 <h2>Introduction</h2>
 
 For more information on CoarseGrind, please visit <a href='http://jonathanballands.me/portfolio/coarsegrind.html' target='_blank'>the official page</a> in my portfolio.<br />
-For the lastest release of CoarseGrind, please visit <a href'https://github.com/jballands/CoarseGrind/releases' target='_blank'>the release page for v0.1</a>.
+For the lastest official version of CoarseGrind, click "Releases" from the menu bar and find "CoarseGrind v0.1".
 
 CoarseGrind is a Python script that scrapes Virginia Tech's HokieSPA page to provide an advantage when waiting for a seat to open in a desired class. CoarseGrind does not use
 any sort of "hacking", as some may call it, to accomplish its goal. It simply leverages the ability a computer has to perform a repeatitive task over and over in order to legitmately
