@@ -37,13 +37,20 @@ class CGProcessor:
 		while (ok == 0):
 
 			credientials = self.present_login()
+			print 'Wait...'
 			ok = client.attempt_login(credientials[0], credientials[1])
+			if (ok == 0):
+				print '\nHokieSPA rejected your credientials. Please try again.\n'
+
+		print '\nWelcome, ' + credientials[0] + '!\nOne moment please...'
 
 		# More init.
 		dumb_client = CGDumbClient()
 		dumb_client.inititalize(credientials[0], credientials[1])
 		grinding_thread = CGGrinder(client)
 		grinding_thread.start()
+
+		print 'Ready\n'
 
 		# Runtime loop.
 		ok = 0
@@ -324,8 +331,6 @@ class CGClient:
 
 		# Success?
 		if (soup.find('div', attrs={'id' : 'login-error'}) == None):
-			
-			print '\nSuccess! Welcome, ' + username + '!\nGathering resources...'
 
 			# Navigate.
 			this_link = list(self.worker.links(text_regex = 'Hokie Spa'))[0]
@@ -333,15 +338,11 @@ class CGClient:
 			this_link = list(self.worker.links(text_regex = 'Registration and Schedule'))[0]
 			self.worker.follow_link(this_link)
 
-			print 'One moment please...'
-
 			self.ready = True
 			return 1
 
 		# Not successful.
 		else:
-
-			print '\nOh snap: HokieSPA rejected your request. Please check your credientials.\n'
 			return 0
 
 	def navigate_to_schedule(self):
@@ -480,8 +481,6 @@ class CGDumbClient:
 		self.worker.form = login_dict
 		self.worker.submit()
 
-		print 'Almost there...\n'
-
 		# Navigate.
 		this_link = list(self.worker.links(text_regex = 'Hokie Spa'))[0]
 		self.worker.follow_link(this_link)
@@ -489,9 +488,6 @@ class CGDumbClient:
 		self.worker.follow_link(this_link)
 		this_link = list(self.worker.links(text_regex = 'Timetable of Classes'))[0]
 		self.worker.follow_link(this_link)
-
-		print 'Ready'
-
 		self.ready = True
 
 	def check_availability(self):
@@ -649,7 +645,15 @@ def doubleshot_mode(input_file, processor):
 	password = re.split('\n', password[1])[0]
 	crn = re.split('\n', crn[1])[0]
 
-	print 'Preparing...\nUsername: ' + username + '\nCRN: ' + crn + '\nOne moment please...'
+	print 'Username: ' + username + '\nCRN: ' + crn + '\nAttempting to connect to HokieSPA...\n'
+
+	client = CGClient()
+	if (client.attempt_login(username, password) == 0):
+		print 'Invalid config file. Terminating...\n'
+		return
+
+	print 'Connected. Preparing...\n'
+	
 
 # MAIN
 def main(argv):
