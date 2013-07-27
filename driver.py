@@ -11,7 +11,7 @@
 # Contains functions that drive CoarseGrind.
 #
 
-import speaker
+import io, navigator
 
 # Driver function that decides how CoarseGrind is started via arguments.
 # @param args: Arguments provided by the user via the command line.
@@ -23,28 +23,65 @@ def main(args):
 
 		for option, arg in opts:
 			if option in ("-h"):
-				speaker.printHelpCmdLine()
+				io.printHelpCmdLine()
 				return
 			elif option in ("-n", "--normal"):
-				print "Run normally."
+				print "Starting normally..."
+				runNormally()
 				return
 			elif option in ("-t", "--turbo"):
-				print "Run in turbo mode."
+				print "Starting in Turbo mode..."
+				runTurbo()
 				return
 			else:
 				continue
 
 	except getopt.GetoptError:
-		speaker.printHelpCmdLine()
+		print "Illegal arguments..."
+		io.printHelpCmdLine()
 		return
 
-	print "Run normally."
+	print "Starting normally..."
+	runNormally()
 	return
 
 # Runs CoarseGrind using a pseudo-BASH shell interface.
 def runNormally():
+	io.printWelcome()
+
+	# Get a scraper going
+	mainScraper = navigator.Scraper()
+	mainScraper.navigateToLoginPage()
+	success = False
+
+	# While you cannot login
+	while (success != True):
+		credentialsList = io.requestCredentials()
+
+		# Check for <q>
+		if (credentialsList[0] == "q"):
+			print "Terminating..."
+			return
+
+		io.waitMessage()
+		success = mainScraper.submitToLoginPage(credentialsList[0], credentialsList[1])
+		if (success != True):
+			io.printLoginFailure()
+
+	print "Login successful. Welcome, " + credentialsList[0] + "!"
+	io.waitMessage()
+
+	# Navigate to the correct page
+	mainScraper.navigateToRegAndSch()
+	print "Ready\n"
+
+	while (io.takeCommand != 0):
+		continue
+
+	io.tryQuit()
 	return
 
 # Runs CoarseGrind in Turbo mode.
 def runTurbo():
+	io.printWelcome()
 	return
