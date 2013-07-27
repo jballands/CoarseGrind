@@ -60,7 +60,7 @@ def runNormally():
 
 		# Check for <q>
 		if (credentialsList[0] == "q"):
-			print "Terminating..."
+			print "Terminating...\n"
 			return
 
 		io.waitMessage()
@@ -75,7 +75,7 @@ def runNormally():
 	mainScraper.navigateToRegAndSch()
 	print "Ready\n"
 
-	while (io.takeCommand != 0):
+	while (io.takeCommand() != 0):
 		continue
 
 	io.tryQuit()

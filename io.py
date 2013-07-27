@@ -14,11 +14,18 @@
 import getpass
 
 QUIT_CMD = "quit"
+HELP_CMD = "help"
 
 # Takes a command from the command line, displaying a prompt.
 def takeCommand():
 	command = raw_input("CG-v0.2$ ")
 	if (command == QUIT_CMD):
+		return 0
+	elif (command == HELP_CMD):
+		printHelp()
+		return 1
+	else:
+		printError(2)
 		return 1
 
 # Prints the help string onto the command line.
@@ -28,9 +35,17 @@ def printHelpCmdLine():
 	print "-n|--normal: Run CoarseGrind normally. Specifying no switches will also run normally."
 	print "-t|--turbo: Run CoarseGrind in Turbo mode, with <config> as the configuration file.\n"
 
+def printHelp():
+	print "add: Try to add a class to your schedule."
+	print "jobs: View a list of all the jobs CoarseGrind is running."
+	print "kill <job_num>: Kills <job_num>."
+	print "checkrate <rate>: Specifies a new grinding rate <rate> in seconds."
+	print "help: See this help prompt."
+	print "quit: Quits CoarseGrind.\n"
+
 # Tries to quit CoarseGrind.
 def tryQuit():
-	print "Ending CoarseGrind session..."
+	print "Ending CoarseGrind session...\n"
 
 # Prints the welcome message.
 def printWelcome():
@@ -54,6 +69,8 @@ def printError(errno):
 	if (errno == 1):
 		print "ERROR: Not on login page. Scrapper is on page: " + self.currentPage
 		print "Did you call 'scraper.navigateToLoginPage() first?"
+	elif (errno == 2):
+		print "Invalid CoarseGrind command. Type 'help' to see commands that CoarseGrind understands.\n"
 
 # Prints a wait message.
 def waitMessage():
