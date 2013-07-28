@@ -11,7 +11,7 @@
 # Contains functions that drive CoarseGrind.
 #
 
-import io, navigator
+import cg_io, navigator, copy, gc
 
 # Driver function that decides how CoarseGrind is started via arguments.
 # @param args: Arguments provided by the user via the command line.
@@ -23,7 +23,7 @@ def main(args):
 
 		for option, arg in opts:
 			if option in ("-h"):
-				io.printHelpCmdLine()
+				cg_io.printHelpCmdLine()
 				return
 			elif option in ("-n", "--normal"):
 				print "Starting normally..."
@@ -38,7 +38,7 @@ def main(args):
 
 	except getopt.GetoptError:
 		print "Illegal arguments..."
-		io.printHelpCmdLine()
+		cg_io.printHelpCmdLine()
 		return
 
 	print "Starting normally..."
@@ -47,7 +47,8 @@ def main(args):
 
 # Runs CoarseGrind using a pseudo-BASH shell interface.
 def runNormally():
-	io.printWelcome()
+	cg_io.printWelcome()
+	print "Preparing. Wait...\n"
 
 	# Get a scraper going
 	mainScraper = navigator.Scraper()
@@ -56,32 +57,46 @@ def runNormally():
 
 	# While you cannot login
 	while (success != True):
-		credentialsList = io.requestCredentials()
+		credentialsList = cg_io.requestCredentials()
 
 		# Check for <q>
 		if (credentialsList[0] == "q"):
 			print "Terminating...\n"
 			return
 
-		io.waitMessage()
+		cg_io.waitMessage()
 		success = mainScraper.submitToLoginPage(credentialsList[0], credentialsList[1])
 		if (success != True):
-			io.printLoginFailure()
+			cg_io.printLoginFailure()
 
 	print "Login successful. Welcome, " + credentialsList[0] + "!"
-	io.waitMessage()
-
-	# Navigate to the correct page
-	mainScraper.navigateToRegAndSch()
 	print "Ready\n"
 
-	while (io.takeCommand() != 0):
-		continue
+	# Run-time loop
+	command = -1
+	while (command != 0):
+		command = cg_io.takeCommand()
 
-	io.tryQuit()
+		# Add operation
+		if (command == 2):
+			cg_io.waitMessage()
+			print "<q> at any prompt to quit.\n"
+
+			timetableScrapper = copy.copy(mainScraper)
+
+			timetableScrapper.navigateToRegAndSch()
+			timetableScrapper.navigateToTimetable()
+			result = cg_io.requestTermSelection(timetableScrapper.locateAndParseTerms())
+
+			# Quitting
+			if (result == -1):
+				print "Caching memory...\n"
+				continue
+
+	cg_io.tryQuit()
 	return
 
 # Runs CoarseGrind in Turbo mode.
 def runTurbo():
-	io.printWelcome()
+	cg_io.printWelcome()
 	return

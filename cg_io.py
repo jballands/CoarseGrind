@@ -15,6 +15,7 @@ import getpass
 
 QUIT_CMD = "quit"
 HELP_CMD = "help"
+ADD_CMD = "add"
 
 # Takes a command from the command line, displaying a prompt.
 def takeCommand():
@@ -24,9 +25,11 @@ def takeCommand():
 	elif (command == HELP_CMD):
 		printHelp()
 		return 1
+	elif (command == ADD_CMD):
+		return 2
 	else:
 		printError(2)
-		return 1
+		return 7
 
 # Prints the help string onto the command line.
 def printHelpCmdLine():
@@ -61,16 +64,53 @@ def requestCredentials():
 	password = getpass.getpass("Password? ")
 	return [name, password]
 
+# Prints a term selection prompt given a list of things to display.
+# @param possibleTerms: A list of terms that you want to display.
+# @return The index of the option selected or -1 if quitting.
+def requestTermSelection(possibleTerms):
+	print "Available terms:"
+	for i in range(0, len(possibleTerms)):
+		print "[" + str(i) + "]: " + possibleTerms[i]
+
+	# Ask until valid	
+	while(True):
+		term = raw_input("Term? ")
+
+		# Quit?
+		if (term == "q"):
+			return -1
+
+		try:
+			int_term = int(term)
+			if (int_term > (len(possibleTerms) - 1) or int_term < 0):
+				print "Only choose an option number between 0 and " + str(len(possibleTerms) - 1) + "."
+				continue
+				
+			return possibleTerms[int_term]
+
+		except ValueError:
+			print "You must type an integer."
+			continue
+
 def printLoginFailure():
 	print "Invalid credientials. Please try again.\n"
 
 # Prints an error message to the console given an error number.
 def printError(errno):
 	if (errno == 1):
-		print "ERROR: Not on login page. Scrapper is on page: " + self.currentPage
-		print "Did you call 'scraper.navigateToLoginPage() first?"
+		print "ERROR: Not on login page."
+		print "Did you call 'scraper.navigateToLoginPage()' first?"
 	elif (errno == 2):
 		print "Invalid CoarseGrind command. Type 'help' to see commands that CoarseGrind understands.\n"
+	elif (errno == 3):
+		print "ERROR: Not on registration and schedule page."
+		print "Did you call 'scraper.navigateToRegAndSch()' first?"
+	elif (errno == 4):
+		print "ERROR: Not on timetable."
+		print "Did you call 'scraper.navigateToTimetable()' first?"
+	elif (errno == 5):
+		print "ERROR: Not on landing page."
+		print "Did you login by calling 'scraper.submitToLoginPage()' first?"
 
 # Prints a wait message.
 def waitMessage():

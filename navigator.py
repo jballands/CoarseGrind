@@ -11,7 +11,7 @@
 # Allows CoarseGrind to crawl HokieSPA.
 #
 
-import mechanize, html5lib
+import mechanize, html5lib, cg_io
 from bs4 import BeautifulSoup
 
 # The scraper class that you should instantiate in order to crawl HokieSPA.
@@ -20,8 +20,10 @@ class Scraper:
 	# Constants, do not modify
 	LOGIN_PAGE = "login_page"
 	REGISTRATION_AND_SCHEDULE = "registration_and_schedule"
-	CAS = "https://webapps.banner.vt.edu/banner-cas-prod/authorized/banner/SelfService"
-	browseSchForm = "https://banweb.banner.vt.edu/ssb/prod/HZSKVTSC.P_DispRequest"
+	TIMETABLE = "timetable"
+	LANDING_PAGE = "landing_page"
+	CASLink = "https://webapps.banner.vt.edu/banner-cas-prod/authorized/banner/SelfService"
+	timetableLink = "https://banweb.banner.vt.edu/ssb/prod/HZSKVTSC.P_DispRequest"
 	currentPage = -1
 
 	def __init__(self):
@@ -37,7 +39,7 @@ class Scraper:
 
 	# Sends scraper to login page.
 	def navigateToLoginPage(self):
-		self.browser.open(self.CAS)
+		self.browser.open(self.CASLink)
 		self.currentPage = self.LOGIN_PAGE
 
 	# Submits login data to the login page.
@@ -47,18 +49,68 @@ class Scraper:
 	def submitToLoginPage(self, username, password):
 		# On login page?
 		if (self.currentPage != self.LOGIN_PAGE):
-			io.printError(1)
+			cg_io.printError(1)
+			print "Terminating...\n"
 			exit(1)
-		return _attemptLogin(username, password, self.browser)
+		result = _attemptLogin(username, password, self.browser)
+		if (result == True):
+			self.currentPage = self.LANDING_PAGE
+		return result
 
+	# From the landing_page sends scraper to registration and schedule page.
 	def navigateToRegAndSch(self):
+		if (self.currentPage != self.LANDING_PAGE):
+			cg_io.printError(5)
+			print "Terminating...\n"
+			exit(5)
+
 		this_link = list(self.browser.links(text_regex = 'Hokie Spa'))[0]
 		self.browser.follow_link(this_link)
 		this_link = list(self.browser.links(text_regex = 'Registration and Schedule'))[0]
 		self.browser.follow_link(this_link)
 		self.currentPage = self.REGISTRATION_AND_SCHEDULE
 
-# Private function
+	# Jumps the scrapper to the timetable.
+	def navigateToTimetable(self):
+		if (self.currentPage != self.REGISTRATION_AND_SCHEDULE):
+			cg_io.printError(3)
+			print "Terminating...\n"
+			exit(3)
+		this_link = list(self.browser.links(text_regex = 'Timetable of Classes'))[0]
+		self.browser.follow_link(this_link)
+		self.currentPage = self.TIMETABLE
+
+	# If on the registration and schedule page, returns a parsed list of acceptable terms.
+	# @return A parsed list of terms.
+	def locateAndParseTerms(self):
+		if (self.currentPage != self.TIMETABLE):
+			cg_io.printError(4)
+			print "Terminating...\n"
+			exit(4)
+
+		rawItems = list(self.browser.forms())[1].find_control("TERMYEAR").possible_items()
+		parsedItems = []
+		for item in rawItems:
+			item = int(item)
+
+			# Math
+			month = item % 10
+			year = (item - (item % 100)) / 100
+
+			if (month == 1):
+				month = "Spring"
+			elif (month == 6):
+				month = "Summer I"
+			elif (month == 7):
+				month = "Summer II"
+			elif (month == 9):
+				month = "Fall"
+
+			parsedItems.append(month + " " + str(year))
+
+		return parsedItems
+
+ # Private function
 # Attempts to login to HokieSPA.
 # @param username: The username.
 # @param password: The password.
