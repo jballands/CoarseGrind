@@ -26,16 +26,21 @@ their chances of being added while freeing up time for the student to do other t
     smoking your competition.</li>
   </ul>
   </li>
-  <li><b>Numerous stability improvements and bug fixes</b>
-  <ul>
-    <li>Since this version's code will be completely refactored, CoarseGrind should be more stable and less buggy.</li>
-  </ul>
-  </li>
   <li><b>More sophisticated grinding routine</b>
   <ul>
     <li>A more complex and sophisticated grinding mechanism allows courses with open seats to be discovered more
     quickly.</li>
     <li>When a seat becomes available, adding the course to your schedule also occurs more quickly.</li>
+  </ul>
+  <li><b>Resource recycling</b>
+  <ul>
+    <li>This version will use resources more frugally and recycle old resources to reuse later.</li>
+    <li>This results in faster load times and lower system memory usage.</li>
+  </ul>
+  </li>
+   <li><b>Numerous stability improvements and bug fixes</b>
+  <ul>
+    <li>Since this version's code will be completely refactored, CoarseGrind should be more stable and less buggy.</li>
   </ul>
   </li>
 </ul>
