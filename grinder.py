@@ -8,6 +8,15 @@
 # For more information, visit jonathanballands.me./portfolio/coarsegrind.html
 #
 # grinder.py
-# Provides multithreading functionallty that grinds classes.
+# Provides a set of "pools" for CoarseGrind to use for jobs and resource recycling.
+# Provides multithreaded functionality for concurrent control flow.
 #
 
+import workerpool
+
+class GruntPool:
+
+	# Initializes a worker pool that grinds courses.
+	# @param workers: The number of workers in the worker pool you want.
+	def __init__(self, workers):
+		self.pool = workerpool.WorkerPool(workers)
