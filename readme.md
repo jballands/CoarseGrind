@@ -1,6 +1,26 @@
 <h1>CoarseGrind v0.2</h1>
 <h3><em>CoarseGrind: The automated Virginia Tech course grinding script.</em></h3>
 
+<h2>As Drop/Add Nears...</h2>
+
+<ul>
+  <li>Virginia Tech's Drop/Add system will reopen at 12:00am EST on August 10, 2013.</li>
+  <li>CoarseGrind v0.2 should be available as a beta on August 9, 2013.</li>
+  <li>Check this repository regularly for updates as Drop/Add draws nearer.</li>
+  <li>Once released, use CoarseGrind v0.2-beta at your own risk:
+  <ul>
+    <li>While pre-alpha testing has been performed, an alpha test will be completely skipped to release CoarseGrind as a beta in time for Drop/Add Fall 2013.</li>
+    <li>Since testing a system of this nature is incredibly difficult, <em><b>it is entirely possible that v0.2 may behave abnormally!</b></em></li>
+    <li>For your safety, download v0.1 from the "Releases" tab on the menu bar. Follow the instructions provided carefully.</li>
+  </ul>
+  <li>If you think that v0.2 is behaving abnormally:
+  <ul>
+    <li><em><b>Stop using v0.2-beta and use v0.1!</b></em> This is the only version I have officially released.</li>
+    <li>Once you get v0.1 going, send me an email (<a href="mailto:jballands@gmail.com">jballands@gmail.com</a>) describing exactly what you did to make v0.2-beta behave badly. I will try and fix the problem as quickly as I possibly can!</li>
+  </ul>
+  <li>Good luck! I want you all to get the classes you want/need. :)</li>
+</ul>
+
 <h2>Introduction</h2>
 
 For more information on CoarseGrind, please visit <a href='http://jonathanballands.me/portfolio/coarsegrind.html' target='_blank'>the official page</a> in my portfolio.<br />
@@ -45,9 +65,6 @@ their chances of being added while freeing up time for the student to do other t
   </li>
 </ul>
 
-<h2>Release notes</h2>
+<h2>Contribute to CoarseGrind</h2>
 
-CoarseGrind v0.2 should be released on or before August 26th (the first day of classes at Virginia Tech) this upcoming semester. However, depending upon my work load, this may occur
-earlier or later!
-
-Feel free to contribute to CoarseGrind by submitting a pull request.
+Are you a Hokie that wants to develop CoarseGrind further once I graduate? Maybe you aren't a Hokie but you want to create a similar script for your school's system? Submit a pull request or email me at <a href="mailto:jballands@gmail.com">jballands@gmail.com</a> if you have any questions! Don't be shy!
