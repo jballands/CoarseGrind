@@ -11,7 +11,7 @@
 # Contains functions that allow for I/O functionality in CoarseGrind.
 #
 
-import getpass
+import getpass, re
 
 QUIT_CMD = "quit"
 HELP_CMD = "help"
@@ -19,7 +19,7 @@ ADD_CMD = "add"
 
 # Takes a command from the command line, displaying a prompt.
 def takeCommand():
-	command = raw_input("CG-v0.2$ ")
+	command = raw_input("CG-v0.2-B$ ")
 	if (command == QUIT_CMD):
 		return 0
 	elif (command == HELP_CMD):
@@ -52,7 +52,7 @@ def tryQuit():
 
 # Prints the welcome message.
 def printWelcome():
-	print "\n~ COARSEGRIND ~\nThe automated Virginia Tech course grinding script.\n---------------------------------------------------\n(C)2013 Jonathan Ballands, v0.2\n"
+	print "\n~ COARSEGRIND ~\nThe automated Virginia Tech course grinding script.\n---------------------------------------------------\n(C)2013 Jonathan Ballands, v0.2 Beta\n"
 
 # Asks for user credientials on the command line. Returns a list with the username at
 # element 0 and the password at element 1.
@@ -66,9 +66,9 @@ def requestCredentials():
 
 # Prints a term selection prompt given a list of things to display.
 # @param possibleTerms: A list of terms that you want to display.
-# @return The index of the option selected or -1 if quitting.
+# @return The selected option's value or -1 if quitting.
 def requestTermSelection(possibleTerms):
-	print "Available terms:"
+	print "Choose a term:"
 	for i in range(0, len(possibleTerms)):
 		print "[" + str(i) + "]: " + possibleTerms[i]
 
@@ -81,21 +81,43 @@ def requestTermSelection(possibleTerms):
 			return -1
 
 		try:
-			int_term = int(term)
-			if (int_term > (len(possibleTerms) - 1) or int_term < 0):
+			intTerm = int(term)
+			if (intTerm > (len(possibleTerms) - 1) or intTerm < 0):
 				print "Only choose an option number between 0 and " + str(len(possibleTerms) - 1) + "."
 				continue
 				
-			return possibleTerms[int_term]
+			return intTerm
 
 		except ValueError:
 			print "You must type an integer."
 			continue
 
+# Prints a CRN input.
+# @return A valid CRN or -1 if quitting.
+def requestCrn():
+	print "Type CRN of desired class."
+
+	# Ask until valid
+	while(True):
+		crn = raw_input("CRN? ")
+
+		# Quit?
+		if (crn == "q"):
+			return -1
+
+		exp = re.compile('^\d{5}$')
+		result = exp.match(crn)
+		
+		if (result):
+			return crn
+		else:
+			print "You must type 5 consecutive integers."
+
 def printLoginFailure():
 	print "Invalid credientials. Please try again.\n"
 
 # Prints an error message to the console given an error number.
+# @param errno: The error number.
 def printError(errno):
 	if (errno == 1):
 		print "ERROR: Not on login page."
@@ -111,6 +133,8 @@ def printError(errno):
 	elif (errno == 5):
 		print "ERROR: Not on landing page."
 		print "Did you login by calling 'scraper.submitToLoginPage()' first?"
+	elif (errno == 6):
+		print "Invalid CRN. Verify that the CRN you provided is valid.\n"
 
 # Prints a wait message.
 def waitMessage():

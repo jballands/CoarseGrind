@@ -86,12 +86,31 @@ def runNormally():
 
 			timetableScrapper.navigateToRegAndSch()
 			timetableScrapper.navigateToTimetable()
-			result = cg_io.requestTermSelection(timetableScrapper.locateAndParseTerms())
+			
+			# This loop is here because we have to make sure that the CRN is valid
+			# You only know if the CRN is valid after submitting, so the loop goes here
+			while(True):
+				term = cg_io.requestTermSelection(timetableScrapper.locateAndParseTerms())
 
-			# Quitting
-			if (result == -1):
-				print "Caching memory...\n"
-				continue
+				# Quitting
+				if (term == -1):
+					print "Caching memory...\n"
+					break
+
+				crn = cg_io.requestCrn()
+
+				# Quitting
+				if (term == -1):
+					print "Caching memory...\n"
+					break
+
+				cg_io.waitMessage()
+				if (timetableScrapper.submitToTimetable(term, crn) == False):
+					cg_io.printError(6)
+					continue
+
+				print "Ok!"
+				break
 
 	cg_io.tryQuit()
 	return
@@ -100,3 +119,7 @@ def runNormally():
 def runTurbo():
 	cg_io.printWelcome()
 	return
+
+# Private function
+# Sets up resources for use in CoarseGrind. Runs in a seperate thread.
+#def _setupResources():
