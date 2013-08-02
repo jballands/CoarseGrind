@@ -11,7 +11,7 @@
 # Contains functions that drive CoarseGrind.
 #
 
-import cg_io, navigator, copy, gc
+import cg_io, navigator, copy, gc, threading
 
 # Driver function that decides how CoarseGrind is started via arguments.
 # @param args: Arguments provided by the user via the command line.
@@ -69,6 +69,12 @@ def runNormally():
 		if (success != True):
 			cg_io.printLoginFailure()
 
+	# Get the timetable scrapper and grinder started in another thread on startup
+	timetableScrapper = copy.copy(mainScraper)
+	setupSemaphore = threading.Semaphore()
+	setupThread = threading.Thread(target=_setupResources, args=[timetableScrapper, setupSemaphore])
+	setupThread.start()
+
 	print "Login successful. Welcome, " + credentialsList[0] + "!"
 	print "Ready\n"
 
@@ -82,10 +88,8 @@ def runNormally():
 			cg_io.waitMessage()
 			print "<q> at any prompt to quit.\n"
 
-			timetableScrapper = copy.copy(mainScraper)
-
-			timetableScrapper.navigateToRegAndSch()
-			timetableScrapper.navigateToTimetable()
+			# Semaphore down
+			setupSemaphore.acquire()
 			
 			# This loop is here because we have to make sure that the CRN is valid
 			# You only know if the CRN is valid after submitting, so the loop goes here
@@ -94,23 +98,25 @@ def runNormally():
 
 				# Quitting
 				if (term == -1):
-					print "Caching memory...\n"
+					print "Backing out...\n"
 					break
 
 				crn = cg_io.requestCrn()
 
 				# Quitting
 				if (term == -1):
-					print "Caching memory...\n"
+					print "Backing out...\n"
 					break
 
 				cg_io.waitMessage()
-				if (timetableScrapper.submitToTimetable(term, crn) == False):
-					cg_io.printError(6)
-					continue
+				if (timetableScrapper.submitToTimetable(term, crn) == True):
+					print "Ok!"
+					break
 
-				print "Ok!"
-				break
+				cg_io.printError(6)
+
+			# Semaphore up
+			setupSemaphore.release()
 
 	cg_io.tryQuit()
 	return
@@ -118,8 +124,16 @@ def runNormally():
 # Runs CoarseGrind in Turbo mode.
 def runTurbo():
 	cg_io.printWelcome()
+
+	# Temporary
+	print "Turbo mode is not yet implemented. Terminating..."
 	return
 
 # Private function
 # Sets up resources for use in CoarseGrind. Runs in a seperate thread.
-#def _setupResources():
+def _setupResources(timetableScrapper, setupSemaphore):
+	# These operations take a long time
+	setupSemaphore.acquire()
+	timetableScrapper.navigateToRegAndSch()
+	timetableScrapper.navigateToTimetable()
+	setupSemaphore.release()
