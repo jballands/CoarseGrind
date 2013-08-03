@@ -137,6 +137,6 @@ def runTurbo():
 def _setupResources(timetableScrapper, setupSemaphore):
 	# These operations take a long time
 	setupSemaphore.acquire()
-	timetableScrapper.navigateToRegAndSch()
+	timetableScrapper.jumpToRegAndSch()
 	timetableScrapper.navigateToTimetable()
 	setupSemaphore.release()

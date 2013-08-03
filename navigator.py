@@ -15,22 +15,25 @@ import mechanize, html5lib, cg_io, re
 from bs4 import BeautifulSoup
 
 # The scraper class that you should instantiate in order to crawl HokieSPA.
+# @throws urllib2.URLError exception when connection times out.
 class Scraper:
-
-	# Constants, do not modify
-	LOGIN_PAGE = "login_page"
-	REGISTRATION_AND_SCHEDULE = "registration_and_schedule"
-	TIMETABLE = "timetable"
-	LANDING_PAGE = "landing_page"
-	CASLink = "https://webapps.banner.vt.edu/banner-cas-prod/authorized/banner/SelfService"
-	timetableLink = "https://banweb.banner.vt.edu/ssb/prod/HZSKVTSC.P_DispRequest"
-	currentPage = -1
 
 	def __init__(self):
 		# Make a browser
 		self.browser = mechanize.Browser()
 		self.browser.set_handle_robots(False)
 		self.browser.addheaders = [("User-agent", "Firefox"),]
+
+		# Constants, do not modify
+		self.LOGIN_PAGE = "login_page"
+		self.REGISTRATION_AND_SCHEDULE = "registration_and_schedule"
+		self.TIMETABLE = "timetable"
+		self.LANDING_PAGE = "landing_page"
+		self.DROP_ADD = "drop_add"
+		self.CASLink = "https://webapps.banner.vt.edu/banner-cas-prod/authorized/banner/SelfService"
+		self.timetableLink = "https://banweb.banner.vt.edu/ssb/prod/HZSKVTSC.P_DispRequest"
+		self.regAndSchLink = "https://banweb.banner.vt.edu/ssb/prod/hzskstat.P_DispRegStatPage"
+		self.currentPage = -1
 
 	# Returns a string that describes where this scraper exists. Mostly
 	# used for debugging purposes.
@@ -70,12 +73,14 @@ class Scraper:
 		self.browser.follow_link(this_link)
 		self.currentPage = self.REGISTRATION_AND_SCHEDULE
 
-	# Jumps the scrapper to the timetable.
+	# Deprecated: This function is too slow and prone to error. Use 'jumpToRegAndSch()' instead.
+	# Navigates the scrapper to the timetable.
 	def navigateToTimetable(self):
 		if (self.currentPage != self.REGISTRATION_AND_SCHEDULE):
 			cg_io.printError(3)
 			print "Terminating...\n"
 			exit(3)
+
 		this_link = list(self.browser.links(text_regex = 'Timetable of Classes'))[0]
 		self.browser.follow_link(this_link)
 		self.currentPage = self.TIMETABLE
@@ -115,6 +120,11 @@ class Scraper:
 	# @param crn: The crn to submit with.
 	# @return True if HokieSPA took the data, false if HokieSPA rejected it.
 	def submitToTimetable(self, term, crn):
+		if (self.currentPage != self.TIMETABLE):
+			cg_io.printError(4)
+			print "Terminating...\n"
+			exit(7)
+
 		self.browser.select_form('ttform')
 		form = list(self.browser.forms())[1]
 		termYear = form.find_control("TERMYEAR")
@@ -133,12 +143,17 @@ class Scraper:
 			return False
 
 		# Ok
+		self.currentPage = self.TIMETABLE
 		return True
 
 	# If on the registration and schedule page, returns a parsed dictionary of timetable results.
 	# @return A dictionary of timetable results. If the value of 'isOnline' is True, then the 
 	# value of 'startTime' and 'endTime' will be -1.
 	def locateAndParseTimetableResults(self):
+		if (self.currentPage != self.TIMETABLE):
+			cg_io.printError(6)
+			print "Terminating..."
+
 		html = self.browser.response().read()
 		soup = BeautifulSoup(str(html), 'html5lib')
 
@@ -174,6 +189,37 @@ class Scraper:
 			    "isOnline": isOnline, "startTime": startTime, "endTime": endTime, 
 			    "full": classFull}
 
+	# Jumps scrapper to the registration and schedule page.		    
+	def jumpToRegAndSch(self):
+		self.browser.open(self.regAndSchLink)
+		self.currentPage = self.REGISTRATION_AND_SCHEDULE
+
+	# Navigates to the drop/add page on HokieSPA.
+	# @param term: The term to enter on drop/add.
+	def navigateToDropAdd(self, term):
+		if (self.currentPage != self.REGISTRATION_AND_SCHEDULE):
+			cg_io.printError(7)
+			print "Terminating..."
+
+		# Try to find the add course button
+		this_link = list(self.browser.links(url_regex = '/ssb/prod/bwskfreg\.P_AddDropCrse\?term_in=' + term))[0]
+		self.browser.follow_link(this_link)
+		self.currentPage = self.DROP_ADD
+
+	def submitToDropAdd(self, crn):
+		if (self.currentPage != self.DROP_ADD):
+			cg_io.printError(7)
+			print "Terminating..."
+
+		# Select the form and control
+		addForm = list(self.browser.forms())[1]
+		self.browser.form = addForm
+		termControl = addForm.find_control(id='crn_id1')
+		termControl.value = str(crn)
+
+		# Try and submit
+		self.browser.submit()
+
 # Private function
 # Attempts to login to HokieSPA.
 # @param username: The username.
@@ -188,8 +234,12 @@ def _attemptLogin(username, password, browser):
 	login_dict['password'] = password
 		
 	# Set form and submit
-	browser.form = login_dict
-	browser.submit()
+	try:
+		browser.form = login_dict
+		browser.submit()
+	except urllib2.URLError, e:
+		print "Connection timed out. Your connection to the Internet may be slow or HokieSPA's server may be down."
+		raise TimeoutException
 
 	# Use BS to see what happened
 	soup = BeautifulSoup(browser.response().read())

@@ -7,7 +7,7 @@
 #
 # For more information, visit jonathanballands.me./portfolio/coarsegrind.html
 #
-# io.py
+# cg_io.py
 # Contains functions that allow for I/O functionality in CoarseGrind.
 #
 
@@ -42,7 +42,7 @@ def printHelp():
 	print "add: Try to add a class to your schedule."
 	print "jobs: View a list of all the jobs CoarseGrind is running."
 	print "kill <job_num>: Kills <job_num>."
-	print "checkrate <rate>: Specifies a new grinding rate <rate> in seconds."
+	print "eval <rate>: Specifies a new class evaluation rate <rate> in seconds."
 	print "help: See this help prompt."
 	print "quit: Quits CoarseGrind.\n"
 
@@ -171,6 +171,9 @@ def printError(errno):
 		print "Did you login by calling 'scraper.submitToLoginPage()' first?"
 	elif (errno == 6):
 		print "Invalid CRN. Verify that the CRN you provided is valid.\n"
+	elif (errno == 7):
+		print "ERROR: Not on drop-add page."
+		print "Did you call 'scraper.navigateToDropAdd()' first?"
 
 # Prints a wait message.
 def waitMessage():
