@@ -135,6 +135,45 @@ class Scraper:
 		# Ok
 		return True
 
+	# If on the registration and schedule page, returns a parsed dictionary of timetable results.
+	# @return A dictionary of timetable results. If the value of 'isOnline' is True, then the 
+	# value of 'startTime' and 'endTime' will be -1.
+	def locateAndParseTimetableResults(self):
+		html = self.browser.response().read()
+		soup = BeautifulSoup(str(html), 'html5lib')
+
+		data_left = soup.findAll('td', attrs = {'class' : 'deleft'})
+		data_center = soup.findAll('td', attrs = {'class' : 'dedefault'})
+		data_right = soup.findAll('td', attrs = {'class' : 'deright'})
+
+		class_num = _stripTags(str(data_left[0])).strip()
+		class_name = _stripTags(str(data_left[1]))
+		prof = _stripTags(str(data_left[2]))
+		location = _stripTags(str(data_left[3]))
+		credits = _stripTags(str(data_center[2])).strip()
+		seats = _stripTags(str(data_center[3])).strip()
+		days = _stripTags(str(data_center[4])).strip()
+
+		# Declare
+		isOnline = False
+		startTime = -1
+		endTime = -1
+
+		# Online?
+		if (len(data_center) == 7):
+			isOnline = True
+		else:
+			startTime =_stripTags(str(data_right[0]))
+			endTime = _stripTags(str(data_right[1]))
+
+		regexSeat = re.compile('Full (0|-\d*) / [\d]*')
+		classFull = re.match(regexSeat, seats)
+
+		return {"classNumber": class_num, "className": class_name, "professor": prof, 
+			    "location": location, "credits": credits, "seats": seats, "days": days, 
+			    "isOnline": isOnline, "startTime": startTime, "endTime": endTime, 
+			    "full": classFull}
+
 # Private function
 # Attempts to login to HokieSPA.
 # @param username: The username.
@@ -161,3 +200,12 @@ def _attemptLogin(username, password, browser):
 
 	# Failure	
 	return False
+
+# Private function
+# Strips HTML tags off of output.
+# @param html: The HTML to strip.
+# @returns Only text that resided in the HTML with no tags.
+def _stripTags(html):
+	if html is None:
+		return None
+	return ''.join(BeautifulSoup(html).findAll(text = True)) 

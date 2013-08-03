@@ -68,7 +68,7 @@ def requestCredentials():
 # @param possibleTerms: A list of terms that you want to display.
 # @return The selected option's value or -1 if quitting.
 def requestTermSelection(possibleTerms):
-	print "Choose a term:"
+	print "Choose a term. <q> to quit."
 	for i in range(0, len(possibleTerms)):
 		print "[" + str(i) + "]: " + possibleTerms[i]
 
@@ -95,7 +95,7 @@ def requestTermSelection(possibleTerms):
 # Prints a CRN input.
 # @return A valid CRN or -1 if quitting.
 def requestCrn():
-	print "Type CRN of desired class."
+	print "Type CRN of desired class. <q> to quit."
 
 	# Ask until valid
 	while(True):
@@ -112,6 +112,42 @@ def requestCrn():
 			return crn
 		else:
 			print "You must type 5 consecutive integers."
+
+# Prints an input dialog that asks to either add a class or grind a class.
+# @param dictionaryL The timetable results dictionary.
+# @return True if the user answered yes, false if answered no.
+def requestAddAction(dictionary):
+	if (dictionary["full"]):
+		while (True):
+			answer = raw_input("Begin grinding " + dictionary["classNumber"] + "? (y or n) ")
+			if (answer == "y"):
+				return True
+			elif (answer == "n"):
+				return False
+			else:
+				print "Please type y or n."
+	else:
+		while (True):
+			answer = raw_input("Quickly add " + dictionary["classNumber"] + "? (y or n) ")
+			if (answer == "y"):
+				return True
+			elif (answer == "n"):
+				return False
+			else:
+				print "Please type y or n."
+
+# Prints the timetable results dictionary provided by 
+# Scraper.locateAndParseTimetableResults().
+# @param dictionary: The timetable results dictionary.
+def printTimetableResultDictionary(dictionary):
+
+	print "\nQuery results:"
+	print dictionary["classNumber"] + ": " + dictionary["className"]
+	if (dictionary["isOnline"] == True):
+		print "Online class"
+	else:
+		print "Days: " + dictionary["days"] + ", Duration: " + dictionary["startTime"] + " -> " + dictionary["endTime"]
+	print "Credits: " + dictionary["credits"] + ", Seats: " + re.sub('Full ', '', dictionary["seats"])
 
 def printLoginFailure():
 	print "Invalid credientials. Please try again.\n"

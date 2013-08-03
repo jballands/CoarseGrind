@@ -86,7 +86,6 @@ def runNormally():
 		# Add operation
 		if (command == 2):
 			cg_io.waitMessage()
-			print "<q> at any prompt to quit.\n"
 
 			# Semaphore down
 			setupSemaphore.acquire()
@@ -110,13 +109,17 @@ def runNormally():
 
 				cg_io.waitMessage()
 				if (timetableScrapper.submitToTimetable(term, crn) == True):
-					print "Ok!"
 					break
 
 				cg_io.printError(6)
 
 			# Semaphore up
 			setupSemaphore.release()
+
+			# Report results
+			dictionary = timetableScrapper.locateAndParseTimetableResults()
+			cg_io.printTimetableResultDictionary(dictionary)
+			cg_io.requestAddAction(dictionary)
 
 	cg_io.tryQuit()
 	return
