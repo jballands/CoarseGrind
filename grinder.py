@@ -19,22 +19,20 @@ class GruntPool:
 	# Initializes a grunt pool that grinds courses.
 	# @param size: The number of grunts in the pool.
 	# @param rate: The evaluation rate that all Grunts in the pool should adhere to.
-	# @param master: A browser that is already on the timetable page.
-	def __init__(self, rate, master):
+	def __init__(self, rate):
 		self.listSemaphore = threading.Semaphore()
 		self.grunts = []
 		self.runningJobs = []
 		self.doneJobs = []
 		self.checkRate = rate
-		self.masterBrowser = master
 
 	# Adds a grunt to the pool.
 	# @param dictionary: A dictionary that allows the Grunt to do work.
 	# @param term: The index of the chosen term in the term control.
 	# @param crn: The crn of the course you want to the Grunt to act on.
-	def releaseGrunt(self, dictionary, term, crn):
-		copyScraper = copy.copy(self.masterBrowser)
-		thisGrunt = Job(dictionary, term, crn, self.checkRate, self.runningJobs, self.doneJobs, self.listSemaphore, copyScraper)
+	# @param browser: A scraper that this Grunt can use.
+	def releaseGrunt(self, dictionary, term, crn, scraper):
+		thisGrunt = Job(dictionary, term, crn, self.checkRate, self.runningJobs, self.doneJobs, self.listSemaphore, scraper)
 		thisGrunt.start()
 		self.grunts.append(thisGrunt)
 
@@ -57,8 +55,8 @@ class GruntPool:
 	# suitable for printing.
 	def getDoneList(self):
 		self.listSemaphore.acquire()
-		copyList = copy.copy(doneJobs)
-		doneJobs = []
+		copyList = copy.copy(self.doneJobs)
+		self.doneJobs = []
 		self.listSemaphore.release()
 		return copyList
 
@@ -79,7 +77,7 @@ class Job(threading.Thread):
 	# @param done: A list of all the done jobs.
 	# @param semaphore: The list semaphore.
 	# @param scrapper: The scrapper that this job will use.
-	def __init__(self, dictionary, term, crn, rate, running, done, semaphore, scrapper):
+	def __init__(self, dictionary, term, crn, rate, running, done, semaphore, scraper):
 		super(Job, self).__init__()
 
 		# Set constants
@@ -90,7 +88,7 @@ class Job(threading.Thread):
 		self.doneJobs = done
 		self.checkRateSemaphore = threading.Semaphore()
 		self.listSemaphore = semaphore
-		self.browser = scrapper
+		self.scraper = scraper
 		self.term = term
 		self.crn = crn
 
@@ -101,28 +99,29 @@ class Job(threading.Thread):
 
 		# Endlessly check for an open seat
 		while (hasOpenSeat == False):
-
-			self.browser.submitToTimetable(self.term, self.crn)
-			results = self.browser.locateAndParseTimetableResults()
+			self.scraper.jumpToTimetable()
+			self.scraper.submitToTimetable(self.term, self.crn)
+			results = self.scraper.locateAndParseTimetableResults()
 			if (results["full"] == None):
-				hasOpenSeat == True
+				hasOpenSeat = True
 			else:
 				self.checkRateSemaphore.acquire()
 				for x in range(0, self.checkRate * 2):
-					time.sleep(0.5)
+					time.sleep(5)
 					if self.stopEvent.isSet():
 						return
 				self.checkRateSemaphore.release()
 
 		# Quickly try to add the course
-		self.browser.jumpToRegAndSch()
-		self.browser.navigateToDropAdd(dictionary["term"])
+		self.scraper.jumpToRegAndSch()
+		self.scraper.navigateToDropAdd(self.term)
+
 		# BUGGY LINE
-		self.browser.submitToDropAdd(dictionary["crn"])
+		self.scraper.submitToDropAdd(self.crn)
 
 		self.listSemaphore.acquire()
-		self.runningJobs.remove(jobItems["classNumber"])
-		self.doneJobs.append(jobItems["classNumber"])
+		self.runningJobs.remove(self.jobItems["classNumber"])
+		self.doneJobs.append(self.jobItems["classNumber"])
 		self.listSemaphore.release()
 
 	# Stops this job.

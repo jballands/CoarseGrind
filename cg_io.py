@@ -36,10 +36,11 @@ def takeCommand():
 
 # Prints the help string onto the command line.
 def printHelpCmdLine():
-	print "\ncoarsegrind [-h] [-n|--normal] [-t|--turbo <config>]"
+	print "\ncoarsegrind [-h] [-n|--normal] [-t|--turbo <config>] [-u|--unsafe]"
 	print "-h: See this help prompt."
-	print "-n|--normal: Run CoarseGrind normally. Specifying no switches will also run normally."
-	print "-t|--turbo: Run CoarseGrind in Turbo mode, with <config> as the configuration file.\n"
+	print "-n|--normal: Run CoarseGrind normally. Specifying no switches\nwill also run normally."
+	print "-t|--turbo: Run CoarseGrind in Turbo mode, with <config> as\nthe configuration file."
+	print "-u|--unsafe: Run CoarseGrind in unsafe mode, disabling some\nsafety features. Use at your own risk. Running in unsafe mode\nmay cause undefined behavior.\n"
 
 def printHelp():
 	print "add: Try to add a class to your schedule."
@@ -154,6 +155,10 @@ def printTimetableResultDictionary(dictionary):
 
 def printLoginFailure():
 	print "Invalid credientials. Please try again.\n"
+
+def printNoDropAdd():
+	print "\nError: CoarseGrind can't seem to find drop/add. Check to see if drop/add is online."
+	print "If this is incorrect, start CoarseGrind in unsafe mode to override this error."
 
 # Prints an error message to the console given an error number.
 # @param errno: The error number.

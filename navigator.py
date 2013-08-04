@@ -54,7 +54,7 @@ class Scraper:
 		if (self.currentPage != self.LOGIN_PAGE):
 			cg_io.printError(1)
 			print "Terminating...\n"
-			exit(1)
+			exit(-1)
 		result = _attemptLogin(username, password, self.browser)
 		if (result == True):
 			self.currentPage = self.LANDING_PAGE
@@ -65,7 +65,7 @@ class Scraper:
 		if (self.currentPage != self.LANDING_PAGE):
 			cg_io.printError(5)
 			print "Terminating...\n"
-			exit(5)
+			exit(-1)
 
 		this_link = list(self.browser.links(text_regex = 'Hokie Spa'))[0]
 		self.browser.follow_link(this_link)
@@ -79,19 +79,20 @@ class Scraper:
 		if (self.currentPage != self.REGISTRATION_AND_SCHEDULE):
 			cg_io.printError(3)
 			print "Terminating...\n"
-			exit(3)
+			exit(-1)
 
 		this_link = list(self.browser.links(text_regex = 'Timetable of Classes'))[0]
 		self.browser.follow_link(this_link)
 		self.currentPage = self.TIMETABLE
 
+	# See Issue #3 on GitHub. This function is causing unexpected behavior!!
 	# If on the registration and schedule page, returns a parsed list of acceptable terms.
 	# @return A parsed list of terms.
 	def locateAndParseTerms(self):
 		if (self.currentPage != self.TIMETABLE):
 			cg_io.printError(4)
 			print "Terminating...\n"
-			exit(4)
+			exit(-1)
 
 		rawItems = list(self.browser.forms())[1].find_control("TERMYEAR").possible_items()
 		parsedItems = []
@@ -123,7 +124,7 @@ class Scraper:
 		if (self.currentPage != self.TIMETABLE):
 			cg_io.printError(4)
 			print "Terminating...\n"
-			exit(7)
+			exit(-1)
 
 		self.browser.select_form('ttform')
 		form = list(self.browser.forms())[1]
@@ -189,22 +190,47 @@ class Scraper:
 			    "isOnline": isOnline, "startTime": startTime, "endTime": endTime, 
 			    "full": classFull}
 
-	# Jumps scrapper to the registration and schedule page.		    
+	# Jumps scraper to the registration and schedule page.		    
 	def jumpToRegAndSch(self):
 		self.browser.open(self.regAndSchLink)
 		self.currentPage = self.REGISTRATION_AND_SCHEDULE
 
+	# Jumps scraper to the timetable page. Should be used after logging in.
+	def jumpToTimetable(self):
+		self.browser.open(self.timetableLink)
+		self.currentPage = self.TIMETABLE
+
 	# Navigates to the drop/add page on HokieSPA.
 	# @param term: The term to enter on drop/add.
+	# @returns -1 if drop/add isn't open.
 	def navigateToDropAdd(self, term):
 		if (self.currentPage != self.REGISTRATION_AND_SCHEDULE):
-			cg_io.printError(7)
+			cg_io.printError(3)
 			print "Terminating..."
+			exit(-1)
 
 		# Try to find the add course button
-		this_link = list(self.browser.links(url_regex = '/ssb/prod/bwskfreg\.P_AddDropCrse\?term_in=' + term))[0]
-		self.browser.follow_link(this_link)
+		theseLinks = list(self.browser.links(url_regex = '/ssb/prod/bwskfreg\.P_AddDropCrse\?term_in=' + str(term)))
+
+		self.browser.follow_link(this_link[0])
 		self.currentPage = self.DROP_ADD
+
+	# Simply checks the existance of drop/add.
+	# @param term: The term to enter on drop/add.
+	# @returns False if drop/add is no available, true if it is.
+	def checkDropAddExists(self):
+		if (self.currentPage != self.REGISTRATION_AND_SCHEDULE):
+			cg_io.printError(3)
+			print "Terminating..."
+			exit(-1)
+
+		# Try to find the add course button
+		theseLinks = list(self.browser.links(text_regex = 'Drop/Add'))
+
+		# If drop/add isn't open
+		if (len(theseLinks) == 0):
+			return False
+		return True
 
 	# Submits to the drop/add page.
 	# @param crn: The crn to submit with.
@@ -212,6 +238,7 @@ class Scraper:
 		if (self.currentPage != self.DROP_ADD):
 			cg_io.printError(7)
 			print "Terminating..."
+			exit(-1)
 
 		# Select the form and control
 		addForm = list(self.browser.forms())[1]
@@ -221,18 +248,6 @@ class Scraper:
 
 		# Try and submit
 		self.browser.submit()
-
-	# If you have an index in the term control, this will produce the raw
-	# term value from the term control.
-	# @param index: The index of the value you want in the term control.
-	# @returns The raw value of the term in the term control.
-	def getRawTermFromIndex(self, index):
-		if (self.currentPage != self.TIMETABLE):
-			cg_io.printError(6)
-			print "Terminating..."
-
-		form = list(self.browser.forms())[1]
-		return form.find_control("TERMYEAR").possible_items()[index]
 
 # Private function
 # Attempts to login to HokieSPA.
@@ -248,13 +263,9 @@ def _attemptLogin(username, password, browser):
 	login_dict['password'] = password
 		
 	# Set form and submit
-	try:
-		browser.form = login_dict
-		browser.submit()
-	except urllib2.URLError, e:
-		print "Connection timed out. Your connection to the Internet may be slow or HokieSPA's server may be down."
-		raise TimeoutException
-
+	browser.form = login_dict
+	browser.submit()
+	
 	# Use BS to see what happened
 	soup = BeautifulSoup(browser.response().read())
 

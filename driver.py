@@ -11,7 +11,7 @@
 # Contains functions that drive CoarseGrind.
 #
 
-import cg_io, navigator, copy, gc, threading, grinder
+import cg_io, navigator, copy, gc, threading, grinder, time
 
 # Driver function that decides how CoarseGrind is started via arguments.
 # @param args: Arguments provided by the user via the command line.
@@ -19,7 +19,7 @@ def main(args):
 	import getopt
 
 	try:
-		opts, args = getopt.getopt(args, "hnt:",["turbo="])
+		opts, args = getopt.getopt(args, "hnut:",["turbo="])
 
 		for option, arg in opts:
 			if option in ("-h"):
@@ -27,11 +27,15 @@ def main(args):
 				return
 			elif option in ("-n", "--normal"):
 				print "Starting normally..."
-				runNormally()
+				runNormally(False)
 				return
 			elif option in ("-t", "--turbo"):
 				print "Starting in Turbo mode..."
 				runTurbo()
+				return
+			elif option in ("-u", "--unsafe"):
+				print "Starting in unsafe mode..."
+				runNormally(True)
 				return
 			else:
 				continue
@@ -42,11 +46,11 @@ def main(args):
 		return
 
 	print "Starting normally..."
-	runNormally()
+	runNormally(False)
 	return
 
 # Runs CoarseGrind using a pseudo-BASH shell interface.
-def runNormally():
+def runNormally(unsafe):
 	cg_io.printWelcome()
 	print "Preparing. Wait...\n"
 
@@ -61,7 +65,7 @@ def runNormally():
 
 		# Check for <q>
 		if (credentialsList[0] == "q"):
-			print "Terminating...\n"
+			print "Stopping...\n"
 			return
 
 		cg_io.waitMessage()
@@ -69,9 +73,8 @@ def runNormally():
 		if (success != True):
 			cg_io.printLoginFailure()
 
-	setupSemaphore = threading.Semaphore()
 	pool = 0
-	setupThread = threading.Thread(target=_setupResources, args=[mainScraper, setupSemaphore])
+	setupThread = ThreadWithReturnValue(target=_setupResources, args=[mainScraper, unsafe])
 	setupThread.start()
 
 	print "Login successful. Welcome, " + credentialsList[0] + "!"
@@ -86,13 +89,16 @@ def runNormally():
 		if (command == 2):
 			cg_io.waitMessage()
 
-			# Semaphore down
-			setupSemaphore.acquire()
-
 			# Pool ready?
 			if (pool == 0):
-				pool = grinder.GruntPool(30, copy.copy(mainScraper))
-			
+				pool = grinder.GruntPool(30)
+
+			# Wait to join
+			result = setupThread.join()
+			if (result == -1):
+				cg_io.printNoDropAdd()
+				break
+
 			# This loop is here because we have to make sure that the CRN is valid
 			# You only know if the CRN is valid after submitting, so the loop goes here
 			while(True):
@@ -116,8 +122,6 @@ def runNormally():
 
 				cg_io.printError(6)
 
-			# Semaphore up
-			setupSemaphore.release()
 
 			# Report results
 			dictionary = mainScraper.locateAndParseTimetableResults()
@@ -125,20 +129,32 @@ def runNormally():
 			cg_io.requestAddAction(dictionary)
 
 			# Add a job to the grinder
-			pool.releaseGrunt(dictionary, term, crn)
+			pool.releaseGrunt(dictionary, term, crn, copy.copy(mainScraper))
+			print "Job added\n"
 
 		# Job reporting
 		elif (command == 3):
 			allJobs = pool.getRunningList()
+			print "Busy:"
 			for i in range(0, len(allJobs)):
-				if (i == len(allJobs) - 1):
+				if (i == len(allJobs) - 1 and len(pool.getDoneList()) == 0):
 					print "[" + str(i) + "]: " + allJobs[i] + "\n"
 				else:
 					print "[" + str(i) + "]: " + allJobs[i]
+			
+			allJobs = pool.getDoneList()
+			if (len(allJobs) > 0):
+				print "Done:"
+				for i in range(0, len(allJobs)):
+					if (i == len(allJobs) - 1):
+						print allJobs[i] + "\n"
+					else:
+						print allJobs[i]
 
 	# Try to quit, shutting down the pool
 	cg_io.printQuitting()
-	pool.shutdown()
+	if (pool != 0):
+		pool.shutdown()
 	return
 
 # Runs CoarseGrind in Turbo mode.
@@ -149,13 +165,28 @@ def runTurbo():
 	print "Turbo mode is not yet implemented. Terminating..."
 	return
 
-# Private function
-# Sets up resources for use in CoarseGrind. Runs in a seperate thread.
-# @param theScrapper: The main scrapper.
-# @param setupSemaphore: The mutex lock for the scrapers.
-def _setupResources(theScraper, setupSemaphore):
+# Sets up resources for CoarseGrind on startup.
+# @param theScraper: The scraper to setup.
+# @param unsafe: True if CoarseGrind is running in unsafe mode.
+# @returns -1 if drop/add didn't exist, 0 if it did.
+def _setupResources(theScraper, unsafe):
 	# These operations take a long time
-	setupSemaphore.acquire()
 	theScraper.jumpToRegAndSch()
+	# Unsafe?
+	if (unsafe == False and theScraper.checkDropAddExists() == False):
+		return -1
+			
 	theScraper.navigateToTimetable()
-	setupSemaphore.release()
+	return 0
+
+# Stolen for StackOverflow because it's awesome :)
+class ThreadWithReturnValue(threading.Thread):
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, Verbose=None):
+        threading.Thread.__init__(self, group, target, name, args, kwargs, Verbose)
+        self._return = None
+    def run(self):
+        if self._Thread__target is not None:
+            self._return = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
+    def join(self):
+        threading.Thread.join(self)
+        return self._return
