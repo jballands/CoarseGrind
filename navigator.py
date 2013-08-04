@@ -206,6 +206,8 @@ class Scraper:
 		self.browser.follow_link(this_link)
 		self.currentPage = self.DROP_ADD
 
+	# Submits to the drop/add page.
+	# @param crn: The crn to submit with.
 	def submitToDropAdd(self, crn):
 		if (self.currentPage != self.DROP_ADD):
 			cg_io.printError(7)
@@ -219,6 +221,18 @@ class Scraper:
 
 		# Try and submit
 		self.browser.submit()
+
+	# If you have an index in the term control, this will produce the raw
+	# term value from the term control.
+	# @param index: The index of the value you want in the term control.
+	# @returns The raw value of the term in the term control.
+	def getRawTermFromIndex(self, index):
+		if (self.currentPage != self.TIMETABLE):
+			cg_io.printError(6)
+			print "Terminating..."
+
+		form = list(self.browser.forms())[1]
+		return form.find_control("TERMYEAR").possible_items()[index]
 
 # Private function
 # Attempts to login to HokieSPA.

@@ -16,6 +16,7 @@ import getpass, re
 QUIT_CMD = "quit"
 HELP_CMD = "help"
 ADD_CMD = "add"
+JOB_CMD = "jobs"
 
 # Takes a command from the command line, displaying a prompt.
 def takeCommand():
@@ -27,6 +28,8 @@ def takeCommand():
 		return 1
 	elif (command == ADD_CMD):
 		return 2
+	elif (command == JOB_CMD):
+		return 3
 	else:
 		printError(2)
 		return 7
@@ -47,7 +50,7 @@ def printHelp():
 	print "quit: Quits CoarseGrind.\n"
 
 # Tries to quit CoarseGrind.
-def tryQuit():
+def printQuitting():
 	print "Ending CoarseGrind session...\n"
 
 # Prints the welcome message.

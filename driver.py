@@ -11,7 +11,7 @@
 # Contains functions that drive CoarseGrind.
 #
 
-import cg_io, navigator, copy, gc, threading
+import cg_io, navigator, copy, gc, threading, grinder
 
 # Driver function that decides how CoarseGrind is started via arguments.
 # @param args: Arguments provided by the user via the command line.
@@ -69,10 +69,9 @@ def runNormally():
 		if (success != True):
 			cg_io.printLoginFailure()
 
-	# Get the timetable scrapper and grinder started in another thread on startup
-	timetableScrapper = copy.copy(mainScraper)
 	setupSemaphore = threading.Semaphore()
-	setupThread = threading.Thread(target=_setupResources, args=[timetableScrapper, setupSemaphore])
+	pool = 0
+	setupThread = threading.Thread(target=_setupResources, args=[mainScraper, setupSemaphore])
 	setupThread.start()
 
 	print "Login successful. Welcome, " + credentialsList[0] + "!"
@@ -89,11 +88,15 @@ def runNormally():
 
 			# Semaphore down
 			setupSemaphore.acquire()
+
+			# Pool ready?
+			if (pool == 0):
+				pool = grinder.GruntPool(30, copy.copy(mainScraper))
 			
 			# This loop is here because we have to make sure that the CRN is valid
 			# You only know if the CRN is valid after submitting, so the loop goes here
 			while(True):
-				term = cg_io.requestTermSelection(timetableScrapper.locateAndParseTerms())
+				term = cg_io.requestTermSelection(mainScraper.locateAndParseTerms())
 
 				# Quitting
 				if (term == -1):
@@ -108,7 +111,7 @@ def runNormally():
 					break
 
 				cg_io.waitMessage()
-				if (timetableScrapper.submitToTimetable(term, crn) == True):
+				if (mainScraper.submitToTimetable(term, crn) == True):
 					break
 
 				cg_io.printError(6)
@@ -117,11 +120,25 @@ def runNormally():
 			setupSemaphore.release()
 
 			# Report results
-			dictionary = timetableScrapper.locateAndParseTimetableResults()
+			dictionary = mainScraper.locateAndParseTimetableResults()
 			cg_io.printTimetableResultDictionary(dictionary)
 			cg_io.requestAddAction(dictionary)
 
-	cg_io.tryQuit()
+			# Add a job to the grinder
+			pool.releaseGrunt(dictionary, term, crn)
+
+		# Job reporting
+		elif (command == 3):
+			allJobs = pool.getRunningList()
+			for i in range(0, len(allJobs)):
+				if (i == len(allJobs) - 1):
+					print "[" + str(i) + "]: " + allJobs[i] + "\n"
+				else:
+					print "[" + str(i) + "]: " + allJobs[i]
+
+	# Try to quit, shutting down the pool
+	cg_io.printQuitting()
+	pool.shutdown()
 	return
 
 # Runs CoarseGrind in Turbo mode.
@@ -134,9 +151,11 @@ def runTurbo():
 
 # Private function
 # Sets up resources for use in CoarseGrind. Runs in a seperate thread.
-def _setupResources(timetableScrapper, setupSemaphore):
+# @param theScrapper: The main scrapper.
+# @param setupSemaphore: The mutex lock for the scrapers.
+def _setupResources(theScraper, setupSemaphore):
 	# These operations take a long time
 	setupSemaphore.acquire()
-	timetableScrapper.jumpToRegAndSch()
-	timetableScrapper.navigateToTimetable()
+	theScraper.jumpToRegAndSch()
+	theScraper.navigateToTimetable()
 	setupSemaphore.release()
