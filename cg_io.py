@@ -17,22 +17,12 @@ QUIT_CMD = "quit"
 HELP_CMD = "help"
 ADD_CMD = "add"
 JOB_CMD = "jobs"
+KILL_CMD = "kill"
 
 # Takes a command from the command line, displaying a prompt.
 def takeCommand():
 	command = raw_input("CG-v0.2-B$ ")
-	if (command == QUIT_CMD):
-		return 0
-	elif (command == HELP_CMD):
-		printHelp()
-		return 1
-	elif (command == ADD_CMD):
-		return 2
-	elif (command == JOB_CMD):
-		return 3
-	else:
-		printError(2)
-		return 7
+	return command
 
 # Prints the help string onto the command line.
 def printHelpCmdLine():
@@ -87,7 +77,7 @@ def requestTermSelection(possibleTerms):
 		try:
 			intTerm = int(term)
 			if (intTerm > (len(possibleTerms) - 1) or intTerm < 0):
-				print "Only choose an option number between 0 and " + str(len(possibleTerms) - 1) + "."
+				print "Only choose a valid option number."
 				continue
 				
 			return intTerm
@@ -159,6 +149,7 @@ def printLoginFailure():
 def printNoDropAdd():
 	print "\nError: CoarseGrind can't seem to find drop/add. Check to see if drop/add is online."
 	print "If this is incorrect, start CoarseGrind in unsafe mode to override this error."
+	print "CoarseGrind will now exit."
 
 # Prints an error message to the console given an error number.
 # @param errno: The error number.
@@ -167,7 +158,7 @@ def printError(errno):
 		print "ERROR: Not on login page."
 		print "Did you call 'scraper.navigateToLoginPage()' first?"
 	elif (errno == 2):
-		print "Invalid CoarseGrind command. Type 'help' to see commands that CoarseGrind understands.\n"
+		print "Invalid CoarseGrind command. Type <help> to see commands that CoarseGrind understands.\n"
 	elif (errno == 3):
 		print "ERROR: Not on registration and schedule page."
 		print "Did you call 'scraper.navigateToRegAndSch()' first?"

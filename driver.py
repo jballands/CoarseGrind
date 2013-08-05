@@ -11,7 +11,7 @@
 # Contains functions that drive CoarseGrind.
 #
 
-import cg_io, navigator, copy, gc, threading, grinder, time
+import cg_io, navigator, copy, gc, threading, grinder, time, re
 
 # Driver function that decides how CoarseGrind is started via arguments.
 # @param args: Arguments provided by the user via the command line.
@@ -82,11 +82,16 @@ def runNormally(unsafe):
 
 	# Run-time loop
 	command = -1
-	while (command != 0):
+	while (command != "quit"):
 		command = cg_io.takeCommand()
+		killRegex = re.compile("kill \d+")
+
+		# Quit operation
+		if (command == "quit"):
+			break
 
 		# Add operation
-		if (command == 2):
+		elif (command == "add"):
 			cg_io.waitMessage()
 
 			# Pool ready?
@@ -101,19 +106,22 @@ def runNormally(unsafe):
 
 			# This loop is here because we have to make sure that the CRN is valid
 			# You only know if the CRN is valid after submitting, so the loop goes here
+			backingOut = False
 			while(True):
 				term = cg_io.requestTermSelection(mainScraper.locateAndParseTerms())
 
 				# Quitting
 				if (term == -1):
 					print "Backing out...\n"
+					backingOut = True
 					break
 
 				crn = cg_io.requestCrn()
 
 				# Quitting
-				if (term == -1):
+				if (crn == -1):
 					print "Backing out...\n"
+					backingOut = True
 					break
 
 				cg_io.waitMessage()
@@ -123,33 +131,63 @@ def runNormally(unsafe):
 				cg_io.printError(6)
 
 
+			if (backingOut == True):
+				continue
+
 			# Report results
 			dictionary = mainScraper.locateAndParseTimetableResults()
 			cg_io.printTimetableResultDictionary(dictionary)
-			cg_io.requestAddAction(dictionary)
+			answer = cg_io.requestAddAction(dictionary)
 
 			# Add a job to the grinder
-			pool.releaseGrunt(dictionary, term, crn, copy.copy(mainScraper))
-			print "Job added\n"
+			if (answer == True):
+				pool.releaseGrunt(dictionary, term, crn, copy.copy(mainScraper))
+				print "Job added\n"
+			else:
+				print "Backing out...\n"
 
 		# Job reporting
-		elif (command == 3):
+		elif (command == "jobs"):
 			allJobs = pool.getRunningList()
-			print "Busy:"
-			for i in range(0, len(allJobs)):
-				if (i == len(allJobs) - 1 and len(pool.getDoneList()) == 0):
-					print "[" + str(i) + "]: " + allJobs[i] + "\n"
-				else:
-					print "[" + str(i) + "]: " + allJobs[i]
+			somethingToDisplay = False
+			if (len(allJobs) > 0):
+				somethingToDisplay = True
+				print "Busy:"
+				for i in range(0, len(allJobs)):
+					if (i == len(allJobs) - 1 and len(pool.getDoneList()) == 0):
+						print "[" + str(i) + "]: " + allJobs[i] + "\n"
+					else:
+						print "[" + str(i) + "]: " + allJobs[i]
 			
 			allJobs = pool.getDoneList()
 			if (len(allJobs) > 0):
+				somethingToDisplay = True
 				print "Done:"
 				for i in range(0, len(allJobs)):
 					if (i == len(allJobs) - 1):
 						print allJobs[i] + "\n"
 					else:
 						print allJobs[i]
+				pool.doneJobs = []
+
+			if (somethingToDisplay == False):
+				print "No jobs to display\n"
+
+		# Kill
+		elif (killRegex.search(command) != None):
+			jobNum = map(int, re.findall("\d+", command))[0]
+			if (len(pool.getRunningList()) <= 0):
+				print "No jobs to kill\n"
+				continue
+			if (jobNum < 0 or jobNum >= len(pool.getRunningList())):
+				print "Only type a valid job number.\n"
+				continue
+			print "Killing job number " + str(jobNum) + "\n"
+			pool.stopGrunt(jobNum)
+
+		# Cannot understand command
+		else:
+			cg_io.printError(2)
 
 	# Try to quit, shutting down the pool
 	cg_io.printQuitting()

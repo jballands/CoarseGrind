@@ -32,7 +32,7 @@ class GruntPool:
 	# @param crn: The crn of the course you want to the Grunt to act on.
 	# @param browser: A scraper that this Grunt can use.
 	def releaseGrunt(self, dictionary, term, crn, scraper):
-		thisGrunt = Job(dictionary, term, crn, self.checkRate, self.runningJobs, self.doneJobs, self.listSemaphore, scraper)
+		thisGrunt = Job(dictionary, term, crn, self.checkRate, self.runningJobs, self.doneJobs, self.grunts, self.listSemaphore, scraper)
 		thisGrunt.start()
 		self.grunts.append(thisGrunt)
 
@@ -46,6 +46,11 @@ class GruntPool:
 			grunt.stop()
 			grunt.join()
 
+	# Stops a specific Grunt.
+	# @param index: The index of the Grunt to stop.
+	def stopGrunt(self, index):
+		self.grunts[index].stop()
+
 	# Gets a list of all the running Grunts running in a pretty format,
 	# suitable for printing.
 	def getRunningList(self):
@@ -54,17 +59,14 @@ class GruntPool:
 	# Gets a list of all the done Grunts running in a pretty format,
 	# suitable for printing.
 	def getDoneList(self):
-		self.listSemaphore.acquire()
-		copyList = copy.copy(self.doneJobs)
-		self.doneJobs = []
-		self.listSemaphore.release()
-		return copyList
+		return self.doneJobs
 
 	# Changes the evaluation rate for all jobs in the pool.
 	# @param rate: The new rate.
 	def changeRate(self, rate):
 		for grunt in self.grunts:
 			grunt.changeRate(rate)
+
 
 class Job(threading.Thread):
 
@@ -75,9 +77,10 @@ class Job(threading.Thread):
 	# @param rate: The evaluation rate this job adheres to.
 	# @param running: A list of all the running jobs.
 	# @param done: A list of all the done jobs.
+	# @param grunts: A list of all the grunts.
 	# @param semaphore: The list semaphore.
 	# @param scrapper: The scrapper that this job will use.
-	def __init__(self, dictionary, term, crn, rate, running, done, semaphore, scraper):
+	def __init__(self, dictionary, term, crn, rate, running, done, grunts, semaphore, scraper):
 		super(Job, self).__init__()
 
 		# Set constants
@@ -91,6 +94,7 @@ class Job(threading.Thread):
 		self.scraper = scraper
 		self.term = term
 		self.crn = crn
+		self.grunts = grunts
 
 	# See Issue #2 on GitHub, as this function contains a known bug!!
 	# Runs the job, endlessly checking to see if a course is ready to add.
@@ -122,11 +126,17 @@ class Job(threading.Thread):
 		self.listSemaphore.acquire()
 		self.runningJobs.remove(self.jobItems["classNumber"])
 		self.doneJobs.append(self.jobItems["classNumber"])
+		self.grunts.remove(self)
 		self.listSemaphore.release()
 
 	# Stops this job.
 	def stop(self):
 		self.stopEvent.set()
+		self.listSemaphore.acquire()
+		self.runningJobs.remove(self.jobItems["classNumber"])
+		self.doneJobs.append(self.jobItems["classNumber"] + " - stopped by user")
+		self.grunts.remove(self)
+		self.listSemaphore.release()
 
 	# Changes the check rate of this job.
 	# @param rate: The new rate.
