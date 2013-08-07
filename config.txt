@@ -1,10 +1,27 @@
-// This is the config file for CoarseGrind v0.2 with DoubleShot.
-// Type the appropriate credential immediately after the arrow.
+// 
+// This is the config file for CoarseGrind v0.2 Turbo.
+// As long as you start a line with '//', that line will be ignored when
+// CoarseGrind reads this config file.
 //
-// config.txt for DoubleShot
+// Please enter the following information:
+// username>: Your PID
+// password>: Your password (do not show anybody)
+// crn>: The CRN of the course you would like to try to add
+// term>: The term code.
+//
+// Write the term code using the following format:
+// Spring = S
+// Fall = F
+// Summer I = U
+// Summer II = W
+// Follow the semester with the last two numbers in the year.
+// Ex: Summer II 2013 = W13, Spring 2042 = S42
+//
+// config.txt
+// The configuration file for CoarseGrind Turbo mode.
 //
 
-username>jonathan
-password>;Aytak2107k;
-crn>92092
-term>F13
+username>
+password>
+crn>
+term>
