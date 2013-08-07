@@ -42,14 +42,15 @@ class GruntPool:
 
 	# Shuts down this Grunt pool.
 	def shutdown(self):
-		for grunt in self.grunts:
-			grunt.stop()
-			grunt.join()
+		for i in range(0, len(self.grunts)):
+			self.grunts[i].stop()
+			self.grunts[i].join()
 
 	# Stops a specific Grunt.
 	# @param index: The index of the Grunt to stop.
 	def stopGrunt(self, index):
 		self.grunts[index].stop()
+		self.grunts.remove(self)
 
 	# Gets a list of all the running Grunts running in a pretty format,
 	# suitable for printing.
@@ -66,6 +67,7 @@ class GruntPool:
 	def changeRate(self, rate):
 		for grunt in self.grunts:
 			grunt.changeRate(rate)
+		self.checkRate = rate
 
 	# Broadcasts a debug message to all Grunts, such that they print debug info.
 	# @param on: True to turn debugging on, false to turn it off.
@@ -94,7 +96,6 @@ class Job(threading.Thread):
 		self.checkRate = rate
 		self.runningJobs = running
 		self.doneJobs = done
-		self.checkRateSemaphore = threading.Semaphore()
 		self.listSemaphore = semaphore
 		self.scraper = scraper
 		self.term = term
@@ -126,12 +127,12 @@ class Job(threading.Thread):
 					print "Job " + self.jobItems["classNumber"] + " was full. Going to sleep..."
 				self.debugSemaphore.release()
 
-				self.checkRateSemaphore.acquire()
-				for x in range(0, self.checkRate):
+				# Sleeping loop
+				copyRate = copy.deepcopy(self.checkRate)
+				for x in range(0, copyRate):
 					time.sleep(1)
 					if self.stopEvent.isSet():
 						return
-				self.checkRateSemaphore.release()
 
 				self.debugSemaphore.acquire()
 				if (self.debug == True):
@@ -167,15 +168,12 @@ class Job(threading.Thread):
 		self.listSemaphore.acquire()
 		self.runningJobs.remove(self.jobItems["classNumber"])
 		self.doneJobs.append(self.jobItems["classNumber"] + " - stopped by user")
-		self.grunts.remove(self)
 		self.listSemaphore.release()
 
 	# Changes the check rate of this job.
 	# @param rate: The new rate.
 	def changeRate(self, rate):
-		self.checkRateSemaphore.acquire()
 		self.checkRate = rate
-		self.checkRateSemaphore.release()
 
 	# Turns on debugging mode for this Grunt.
 	# @param on: True to turn on debugging, false to turn it off.

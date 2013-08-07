@@ -66,7 +66,7 @@ def runNormally(unsafe):
 
 		# Check for <q>
 		if (credentialsList[0] == "q"):
-			print "Stopping...\n"
+			print "Exiting...\n"
 			return
 
 		cg_io.waitMessage()
@@ -86,6 +86,7 @@ def runNormally(unsafe):
 	while (command != "quit"):
 		command = cg_io.takeCommand()
 		killRegex = re.compile("kill \d+")
+		evalRegex = re.compile("eval \d+")
 
 		# Quit operation
 		if (command == "quit"):
@@ -191,7 +192,7 @@ def runNormally(unsafe):
 				print "No jobs to display\n"
 			continue
 
-		# Kill
+		# Kill operation
 		elif (killRegex.search(command) != None):
 			jobNum = map(int, re.findall("\d+", command))[0]
 			if (len(pool.getRunningList()) <= 0):
@@ -203,6 +204,15 @@ def runNormally(unsafe):
 			print "Killing job number " + str(jobNum) + "\n"
 			pool.stopGrunt(jobNum)
 			continue
+
+		# Eval operation
+		elif (evalRegex.search(command) != None):
+			evalRate = map(int, re.findall("\d+", command))[0]
+			if (evalRate < 5):
+				print "Cannot use an evaluation rate less than 5 seconds.\n"
+			else:
+				pool.changeRate(evalRate)
+				print "Jobs will check for open seats every " + str(evalRate) + " seconds\n"
 
 		# Cannot understand command
 		else:
