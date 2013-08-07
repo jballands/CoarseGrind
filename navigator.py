@@ -87,7 +87,7 @@ class Scraper:
 
 	# See Issue #3 on GitHub. This function is causing unexpected behavior!!
 	# If on the registration and schedule page, returns a parsed list of acceptable terms.
-	# @return A parsed list of terms.
+	# @return An array with a parsed list of terms and the corresponding raw items.
 	def locateAndParseTerms(self):
 		if (self.currentPage != self.TIMETABLE):
 			cg_io.printError(4)
@@ -114,7 +114,7 @@ class Scraper:
 
 			parsedItems.append(month + " " + str(year))
 
-		return parsedItems
+		return [parsedItems, rawItems]
 
 	# Submits data to the timetable and tries to get a result.
 	# @param term: The term to select.

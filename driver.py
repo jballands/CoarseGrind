@@ -31,7 +31,7 @@ def main(args):
 				return
 			elif option in ("-t", "--turbo"):
 				print "Starting in Turbo mode..."
-				runTurbo()
+				runTurbo(arg)
 				return
 			elif option in ("-u", "--unsafe"):
 				print "Starting in unsafe mode..."
@@ -41,7 +41,6 @@ def main(args):
 				continue
 
 	except getopt.GetoptError:
-		print "Illegal arguments..."
 		cg_io.printHelpCmdLine()
 		return
 
@@ -122,7 +121,7 @@ def runNormally(unsafe):
 			# You only know if the CRN is valid after submitting, so the loop goes here
 			backingOut = False
 			while(True):
-				term = cg_io.requestTermSelection(mainScraper.locateAndParseTerms())
+				term = cg_io.requestTermSelection(mainScraper.locateAndParseTerms()[0])
 
 				# Quitting
 				if (term == -1):
@@ -155,7 +154,6 @@ def runNormally(unsafe):
 
 			# Add a job to the grinder
 			if (answer == True):
-				# BUG: Shallow copies only do references, and deep copy doesn't work...
 				copyScraper = navigator.clone(mainScraper)
 				pool.releaseGrunt(dictionary, term, crn, copyScraper)
 				print "Job added\n"
@@ -226,11 +224,106 @@ def runNormally(unsafe):
 	return
 
 # Runs CoarseGrind in Turbo mode.
-def runTurbo():
+# @param inputFile: The config file.
+def runTurbo(inputFile):
 	cg_io.printWelcome()
+	print "Reading config file..."
+	
+	username = ''
+	password = ''
+	crn = ''
+	term = ''
 
-	# Temporary
-	print "Turbo mode is not yet implemented. Terminating..."
+	# Match 0 to many spaces plus sought string.
+	username_regex = re.compile('\S*username>')
+	password_regex = re.compile('\S*password>')
+	crn_regex = re.compile('\S*crn>')
+	term_regex = re.compile('\S*term>')
+	comment_regex = re.compile('\S*//')
+
+	# Read the file.
+	with open(inputFile) as f:
+
+		content = f.readlines()
+		for line in content:
+			if (re.match(comment_regex ,line)):
+				continue
+			elif (re.match(username_regex, line)):
+				username = re.split(username_regex, line)
+			elif (re.match(password_regex, line)):
+				password = re.split(password_regex, line)
+			elif (re.match(crn_regex, line)):
+				crn = re.split(crn_regex, line)
+			elif (re.match(term_regex, line)):
+				term = re.split(term_regex, line)
+			else:
+				continue
+
+	if (username == '' or password == '' or crn == '' or term == ''):
+		print "Error: Bad config file. Consult the README for more information."
+		print "Exiting...\n"
+		return
+
+	# Parse from spliter.
+	username = re.split('\n', username[1])[0]
+	password = re.split('\n', password[1])[0]
+	crn = re.split('\n', crn[1])[0]
+	term = re.split('\n', term[1])[0]
+
+	print 'Username: ' + str(username) + ', Term: ' + str(term) + ', CRN: ' + str(crn) + '\n'
+	print "Logging in. Wait...\n"
+
+	mainScraper = navigator.Scraper()
+	mainScraper.navigateToLoginPage()
+	success = mainScraper.submitToLoginPage(username, password)
+
+	if (success == False):
+		print "Invalid credentials. Check your config file and try again."
+		print "Ending CoarseGrind session...\n"
+		return
+
+	print "Login successful. Welcome, " + username + "!"
+	print "Preparing to do intense work. Wait...\n"
+
+	# Jump
+	mainScraper.jumpToRegAndSch()
+	mainScraper.navigateToTimetable()
+
+	# Parse
+	rawTerm = cg_io.parseTerm(term)
+
+	# See if term is available
+	rawTerms = mainScraper.locateAndParseTerms()[1]
+	if ((str(rawTerm) in rawTerms) == False):
+		print "Invalid term. The term you provided is not available on HokieSPA."
+		print "Ending Turbo session...\n"
+		return
+
+	# See if crn is valid
+	if (mainScraper.submitToTimetable(rawTerms.index(str(rawTerm)), crn) == False):
+		print "Invalid CRN. The CRN you provided is not a valid CRN."
+		print "Ending Turbo session...\n"
+		return
+
+	# Get results for Grunt
+	dictionary = mainScraper.locateAndParseTimetableResults()
+
+	print "CoarseGrind is working furiously to add you."
+	print "Turbo mode will quit automatically once CoarseGrind has added you."
+	print "Job info will now be displayed."
+	print "<return> at any time to stop.\n"
+
+	# Work furiously
+	pool = grinder.GruntPool(6)
+	pool.releaseGrunt(dictionary, rawTerms.index(str(rawTerm)), crn, mainScraper)
+	pool.broadcastDebug(True)
+	raw_input("")
+	pool.broadcastDebug(False)
+
+	# Stop
+	print "Ending Turbo session...\n"
+	pool.shutdown()
+
 	return
 
 # Sets up resources for CoarseGrind on startup.

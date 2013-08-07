@@ -125,6 +125,33 @@ def requestAddAction(dictionary):
 			else:
 				print "Please type y or n."
 
+# Parses a term given in the config file into a form that HokieSPA can
+# understand.
+# @param term: The term to parse.
+# @return The parsed term, or -1 on failure.
+def parseTerm(term):
+	format_regex = re.compile("[A-Z]\d{2}")
+	if (re.match(format_regex, term) == None):
+		return -1
+
+	semester = term[0]
+	year = term[1:]
+
+	base = 200000
+	base = base + (int(year) * 100)
+
+	if (semester == 'S'):
+		base = base + 1
+	elif (semester == 'U'):
+		base = base + 6
+	elif (semester == 'W'):
+		base = base + 7
+	elif (semester == 'F'):
+		base = base + 9
+	else:
+		return -1
+	return base
+
 # Prints the timetable results dictionary provided by 
 # Scraper.locateAndParseTimetableResults().
 # @param dictionary: The timetable results dictionary.
