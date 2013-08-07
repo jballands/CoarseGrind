@@ -93,7 +93,7 @@ class Scraper:
 			cg_io.printError(4)
 			print "Terminating...\n"
 			exit(-1)
-
+			
 		rawItems = list(self.browser.forms())[1].find_control("TERMYEAR").possible_items()
 		parsedItems = []
 		for item in rawItems:
@@ -248,6 +248,20 @@ class Scraper:
 
 		# Try and submit
 		self.browser.submit()
+
+# Creates a clone of a scraper.
+# @param scraper: The scraper to clone.
+# @return The clone.
+def clone(scraper):
+	if (scraper.browser.response() != None):
+		newScraper = Scraper()
+		theCookieJar = scraper.browser._ua_handlers['_cookies'].cookiejar
+
+		newScraper.browser.set_response(scraper.browser.response())
+		newScraper.browser._ua_handlers['_cookies'].cookiejar = theCookieJar
+
+		return newScraper
+		
 
 # Private function
 # Attempts to login to HokieSPA.

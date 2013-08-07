@@ -51,6 +51,7 @@ def main(args):
 
 # Runs CoarseGrind using a pseudo-BASH shell interface.
 def runNormally(unsafe):
+
 	cg_io.printWelcome()
 	print "Preparing. Wait...\n"
 
@@ -89,6 +90,18 @@ def runNormally(unsafe):
 		# Quit operation
 		if (command == "quit"):
 			break
+
+		# Help operation
+		elif (command == "help"):
+			cg_io.printHelp()
+			continue
+
+		# Debug operation
+		elif (command == "debug"):
+			print "<return> key at any time to leave debugging context."
+			pool.broadcastDebug(True)
+			crn = raw_input("")
+			pool.broadcastDebug(False)
 
 		# Add operation
 		elif (command == "add"):
@@ -141,10 +154,14 @@ def runNormally(unsafe):
 
 			# Add a job to the grinder
 			if (answer == True):
-				pool.releaseGrunt(dictionary, term, crn, copy.copy(mainScraper))
+				# BUG: Shallow copies only do references, and deep copy doesn't work...
+				copyScraper = navigator.clone(mainScraper)
+				pool.releaseGrunt(dictionary, term, crn, copyScraper)
 				print "Job added\n"
+				continue
 			else:
 				print "Backing out...\n"
+				continue
 
 		# Job reporting
 		elif (command == "jobs"):
@@ -172,6 +189,7 @@ def runNormally(unsafe):
 
 			if (somethingToDisplay == False):
 				print "No jobs to display\n"
+			continue
 
 		# Kill
 		elif (killRegex.search(command) != None):
@@ -184,10 +202,12 @@ def runNormally(unsafe):
 				continue
 			print "Killing job number " + str(jobNum) + "\n"
 			pool.stopGrunt(jobNum)
+			continue
 
 		# Cannot understand command
 		else:
 			cg_io.printError(2)
+			continue
 
 	# Try to quit, shutting down the pool
 	cg_io.printQuitting()

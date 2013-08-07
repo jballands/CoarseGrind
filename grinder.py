@@ -67,6 +67,11 @@ class GruntPool:
 		for grunt in self.grunts:
 			grunt.changeRate(rate)
 
+	# Broadcasts a debug message to all Grunts, such that they print debug info.
+	# @param on: True to turn debugging on, false to turn it off.
+	def broadcastDebug(self, on):
+		for grunt in self.grunts:
+			grunt.setDebug(on)
 
 class Job(threading.Thread):
 
@@ -95,6 +100,8 @@ class Job(threading.Thread):
 		self.term = term
 		self.crn = crn
 		self.grunts = grunts
+		self.debug = False
+		self.debugSemaphore = threading.Semaphore()
 
 	# See Issue #2 on GitHub, as this function contains a known bug!!
 	# Runs the job, endlessly checking to see if a course is ready to add.
@@ -103,18 +110,38 @@ class Job(threading.Thread):
 
 		# Endlessly check for an open seat
 		while (hasOpenSeat == False):
+			self.debugSemaphore.acquire()
+			if (self.debug == True):
+				print "Job " + self.jobItems["classNumber"] + " checking timetable..."
+			self.debugSemaphore.release()
+
 			self.scraper.jumpToTimetable()
 			self.scraper.submitToTimetable(self.term, self.crn)
 			results = self.scraper.locateAndParseTimetableResults()
 			if (results["full"] == None):
 				hasOpenSeat = True
 			else:
+				self.debugSemaphore.acquire()
+				if (self.debug == True):
+					print "Job " + self.jobItems["classNumber"] + " was full. Going to sleep..."
+				self.debugSemaphore.release()
+
 				self.checkRateSemaphore.acquire()
-				for x in range(0, self.checkRate * 2):
-					time.sleep(5)
+				for x in range(0, self.checkRate):
+					time.sleep(1)
 					if self.stopEvent.isSet():
 						return
 				self.checkRateSemaphore.release()
+
+				self.debugSemaphore.acquire()
+				if (self.debug == True):
+					print "Job " + self.jobItems["classNumber"] + " woke up!"
+				self.debugSemaphore.release()
+
+		self.debugSemaphore.acquire()
+		if (self.debug == True):
+			print "Job " + self.jobItems["classNumber"] + " had seats open!!! Quickly adding..."
+		self.debugSemaphore.release()
 
 		# Quickly try to add the course
 		self.scraper.jumpToRegAndSch()
@@ -128,6 +155,11 @@ class Job(threading.Thread):
 		self.doneJobs.append(self.jobItems["classNumber"])
 		self.grunts.remove(self)
 		self.listSemaphore.release()
+
+		self.debugSemaphore.acquire()
+		if (self.debug == True):
+			print "Job " + self.jobItems["classNumber"] + " finished"
+		self.debugSemaphore.release()
 
 	# Stops this job.
 	def stop(self):
@@ -144,3 +176,10 @@ class Job(threading.Thread):
 		self.checkRateSemaphore.acquire()
 		self.checkRate = rate
 		self.checkRateSemaphore.release()
+
+	# Turns on debugging mode for this Grunt.
+	# @param on: True to turn on debugging, false to turn it off.
+	def setDebug(self, on):
+		self.debugSemaphore.acquire()
+		self.debug = on
+		self.debugSemaphore.release()

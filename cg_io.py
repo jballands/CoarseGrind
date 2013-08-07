@@ -13,12 +13,6 @@
 
 import getpass, re
 
-QUIT_CMD = "quit"
-HELP_CMD = "help"
-ADD_CMD = "add"
-JOB_CMD = "jobs"
-KILL_CMD = "kill"
-
 # Takes a command from the command line, displaying a prompt.
 def takeCommand():
 	command = raw_input("CG-v0.2-B$ ")
@@ -38,6 +32,7 @@ def printHelp():
 	print "kill <job_num>: Kills <job_num>."
 	print "eval <rate>: Specifies a new class evaluation rate <rate> in seconds."
 	print "help: See this help prompt."
+	print "debug: Displays debugging information that reveals background activities."
 	print "quit: Quits CoarseGrind.\n"
 
 # Tries to quit CoarseGrind.
