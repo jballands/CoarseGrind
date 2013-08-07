@@ -242,22 +242,27 @@ def runTurbo(inputFile):
 	comment_regex = re.compile('\S*//')
 
 	# Read the file.
-	with open(inputFile) as f:
+	try:
+		with open(inputFile) as f:
 
-		content = f.readlines()
-		for line in content:
-			if (re.match(comment_regex ,line)):
-				continue
-			elif (re.match(username_regex, line)):
-				username = re.split(username_regex, line)
-			elif (re.match(password_regex, line)):
-				password = re.split(password_regex, line)
-			elif (re.match(crn_regex, line)):
-				crn = re.split(crn_regex, line)
-			elif (re.match(term_regex, line)):
-				term = re.split(term_regex, line)
-			else:
-				continue
+			content = f.readlines()
+			for line in content:
+				if (re.match(comment_regex ,line)):
+					continue
+				elif (re.match(username_regex, line)):
+					username = re.split(username_regex, line)
+				elif (re.match(password_regex, line)):
+					password = re.split(password_regex, line)
+				elif (re.match(crn_regex, line)):
+					crn = re.split(crn_regex, line)
+				elif (re.match(term_regex, line)):
+					term = re.split(term_regex, line)
+				else:
+					continue
+	except IOError:
+		print "Error: Config file doesn't exist. Consult the README for more information."
+		print "Exiting...\n"
+		return
 
 	if (username == '' or password == '' or crn == '' or term == ''):
 		print "Error: Bad config file. Consult the README for more information."
