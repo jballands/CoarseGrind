@@ -91,7 +91,7 @@ After downloading Mechanize, BeautifulSoup 4, and HTML5Lib, install the modules 
 You will have to perform this command a total of 3 times, once for each module. For more information on how to install Python modules, visit <a href="http://docs.python.org/2/install/" target="_blank">this link</a>.
 
 <h2>5. Launching CoarseGrind</h2>
-CoareGrind v0.2-β runs entirely on the console and has three different modes. Each mode behaves differently from the others and it is important to know when to use which mode. Below is a description of each mode:
+CoarseGrind v0.2-β runs entirely on the console and has three different modes. Each mode behaves differently from the others and it is important to know when to use which mode. Below is a description of each mode:
 <ul>
 <li><b>Normal mode</b><br/>
 Runs CoarseGrind using the usual BASH-style interface. This mode will be familiar to v0.1 users.</li>
@@ -236,17 +236,17 @@ The following is an example of a valid config file. User `imaHokie` tries to add
 While this version of CoarseGrind was designed to be as strong and robust as possible, problems may still arise. Unfortunately, there isn't much you can do if CoarseGrind behaves abnormally, but I encourage you to try the following.
 
 <h3>Clean CoarseGrind</h3>
-Due to static, the weather, how long your comptuer has been on, etc., the small electrical pulses in your computer may screw up and interfere with CoarseGrind's execution. To fix this, you have to option to clean CoarseGrind.
+Due to static, the weather, how long your computer has been on, etc., the small electrical pulses in your computer may screw up and interfere with CoarseGrind's execution. To fix this, you have to option to clean CoarseGrind.
 
 For <b>Unix-based systems, including OSX</b>, locate the executable shell script name `clean` and double click it to clean CoarseGrind. Restart CoarseGrind once cleaning has completed.
 
-For <b>Windows systems</b> enter the `./src` folder and delete any file that ends in `.pyc` or `.pyo`. Restart CoarseGrind once you have deleted all of these files.
+For <b>Windows systems</b>, enter the `./src` folder and delete any file that ends in `.pyc` or `.pyo`. Restart CoarseGrind once you have deleted all of these files.
 
 <h3>Run CoarseGrind in unsafe mode</h3>
 Sometimes, the safety mechanisms in normal mode may be overprotective and prevent CoarseGrind from doing any work. Run CoarseGrind in unsafe mode and see if your problem persists. Be warned: there be monsters out there. New problems may arise when running in unsafe mode such as CoarseGrind unexpectedly crashing or even deadlocking. Use at your own risk!
 
 <h3>CoarseGrind has deadlocked</h3>
-> CoarseGrind... what are you doing? CoarseGrind! STAHP!!<br />
+> "CoarseGrind... what are you doing? CoarseGrind! STAHP!!"<br />
 > <em>You when CoarseGrind deadlocks</em>
 
 On <b>Unix-based machines, including OSX</b>, you will have to force quit CoarseGrind to end the deadlock. On <b>Windows machines</b>, you will have to use `Ctrl+Alt+Del` to end the deadlock.

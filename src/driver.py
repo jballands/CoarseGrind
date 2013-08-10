@@ -325,8 +325,8 @@ def runTurbo(inputFile):
 	print "Job info will now be displayed."
 	print "<return> at any time to stop.\n"
 
-	# Work furiously
-	pool = grinder.GruntPool(6)
+	# Work furiously (4 seconds)
+	pool = grinder.GruntPool(4)
 	pool.releaseGrunt(dictionary, rawTerms.index(str(rawTerm)), crn, mainScraper)
 	pool.broadcastDebug(True)
 	raw_input("")
