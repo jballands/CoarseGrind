@@ -82,14 +82,22 @@ def runNormally(unsafe):
 
 	# Run-time loop
 	command = -1
-	while (command != "quit"):
+	while (True):
 		command = cg_io.takeCommand()
 		killRegex = re.compile("kill \d+")
 		evalRegex = re.compile("eval \d+")
 
 		# Quit operation
 		if (command == "quit"):
-			break
+			# Try to quit, shutting down the pool
+			if (pool == 0):
+				break
+			elif (pool.hasJobs()):
+				result = cg_io.requestQuit()
+				if (result == True):
+					break
+			print "Backing out...\n"
+			continue
 
 		# Help operation
 		elif (command == "help"):
@@ -217,7 +225,6 @@ def runNormally(unsafe):
 			cg_io.printError(2)
 			continue
 
-	# Try to quit, shutting down the pool
 	cg_io.printQuitting()
 	if (pool != 0):
 		pool.shutdown()
@@ -318,8 +325,8 @@ def runTurbo(inputFile):
 	print "Job info will now be displayed."
 	print "<return> at any time to stop.\n"
 
-	# Work furiously
-	pool = grinder.GruntPool(6)
+	# Work furiously (4 seconds)
+	pool = grinder.GruntPool(4)
 	pool.releaseGrunt(dictionary, rawTerms.index(str(rawTerm)), crn, mainScraper)
 	pool.broadcastDebug(True)
 	raw_input("")

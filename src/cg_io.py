@@ -53,6 +53,19 @@ def requestCredentials():
 	password = getpass.getpass("Password? ")
 	return [name, password]
 
+# Asks the user if they are sure they would like to quit because there are jobs running.
+# @return True if the user answered yes, false if they answered no.
+def requestQuit():
+	print "There are currently some jobs running."
+	while (True):
+		answer = raw_input("Quit anyway? (y or n) ")
+		if (answer == "y"):
+			return True
+		elif (answer == "n"):
+			return False
+		else:
+			print "Please type y or n."
+
 # Prints a term selection prompt given a list of things to display.
 # @param possibleTerms: A list of terms that you want to display.
 # @return The selected option's value or -1 if quitting.

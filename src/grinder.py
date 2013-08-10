@@ -49,8 +49,9 @@ class GruntPool:
 	# Stops a specific Grunt.
 	# @param index: The index of the Grunt to stop.
 	def stopGrunt(self, index):
-		self.grunts[index].stop()
-		self.grunts.remove(self)
+		theGrunt = self.grunts[index]
+		theGrunt.stop()
+		self.grunts.remove(theGrunt)
 
 	# Gets a list of all the running Grunts running in a pretty format,
 	# suitable for printing.
@@ -74,6 +75,14 @@ class GruntPool:
 	def broadcastDebug(self, on):
 		for grunt in self.grunts:
 			grunt.setDebug(on)
+
+	# Describes if the pool is currently running jobs.
+	# @return True if the pool is running jobs, false if not.
+	def hasJobs(self):
+		if (len(self.grunts) > 0):
+			return True
+		else:
+			return False
 
 class Job(threading.Thread):
 
