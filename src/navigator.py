@@ -212,7 +212,7 @@ class Scraper:
 		# Try to find the add course button
 		theseLinks = list(self.browser.links(url_regex = '/ssb/prod/bwskfreg\.P_AddDropCrse\?term_in=' + str(term)))
 
-		self.browser.follow_link(this_link[0])
+		self.browser.follow_link(these_links[0])
 		self.currentPage = self.DROP_ADD
 
 	# Simply checks the existance of drop/add.
