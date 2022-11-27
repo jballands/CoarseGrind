@@ -1,3 +1,5 @@
+**Very much deprecated software, do not use. Keeping for posterity only.**
+
 <h1>CoarseGrind v0.2-β Readme</h1>
 <h3><em>CoarseGrind, the automated Virginia Tech course grinding script.</em></h3>
 
@@ -24,9 +26,9 @@ CoarseGrind was designed to work with Virginia Tech's HokieSPA and no other syst
 
 This version of CoarseGrind is a beta, which means that it has not gone through thorough testing. Although this version of CoarseGrind is designed to be as strong and robust as possible, it is entirely possible that this version of CoarseGrind may:
 <ul>
-<li>Fail to perform it's duties.</li>
-<li>Crash unexpectedly, or worse...</li>
-<li>Deadlock itself.</li>
+<li>Fail to perform it's duties</li>
+<li>Crash unexpectedly</li>
+<li>Deadlock itself</li>
 </ul>
 If any of the above occurs, <em>stop using v0.2-β immediately and switch to <a href="https://github.com/jballands/CoarseGrind/tree/0.1-Release" target="_blank">v0.1</a>!</em> Then, if possible, please send an email to <a href="mailto:jballands@gmail.com">jballands@gmail.com</a> and describe the problem you encountered with steps to reproduce the problem.
 <h3>About CoarseGrind</h3>
@@ -35,18 +37,7 @@ CoarseGrind is a Python script that can help make the process of waiting for a s
 <li>Watching for seats to open in your desired classes.</li>
 <li>Adding yourself quickly to a class when a seat becomes available.</li>
 </ul>
-CoarseGrind is completely automated, meaning that you don't have to be present as CoarseGrind works tirelessly to get you into your classes. No longer do you have to spend huge amounts of time sitting on HokieSPA, desperately waiting for a seat that may or may not open. In fact, here is a list of things you can do instead while CoarseGrind works:
-<ul>
-<li>Do some homework.</li>
-<li>Hit the gym.</li>
-<li>Go to that party you said you'd attend.</li>
-<li>Watch a Hokie football game (GO HOKIES).</li>
-<li>Sleep.</li>
-<li>Feed the cat.</li>
-<li>Make sexy time. ;)</li>
-<li>Be generally awesome.</li>
-</ul>
-For more information about CoarseGrind, visit <a href="http://jonathanballands.me/portfolio/coarsegrind.html">the official page</a> in my portfolio.
+CoarseGrind is completely automated, meaning that you don't have to be present as CoarseGrind works tirelessly to get you into your classes. No longer do you have to spend huge amounts of time sitting on HokieSPA, desperately waiting for a seat that may or may not open.
 
 <h2>2. New features</h2>
 CoarseGrind v0.2-β contains a number of new features over its predecessor, including:
@@ -250,10 +241,3 @@ Sometimes, the safety mechanisms in normal mode may be overprotective and preven
 > <em>You when CoarseGrind deadlocks</em>
 
 On <b>Unix-based machines, including OSX</b>, you will have to force quit CoarseGrind to end the deadlock. On <b>Windows machines</b>, you will have to use `Ctrl+Alt+Del` to end the deadlock.
-
-<h2>8. Other Information</h2>
-Questions or comments? Please feel free to send me an email at <a href="mailto:jballands@gmail.com">jballands@gmail.com</a>.
-
-For more information on CoarseGrind, please visit <a href="http://jonathanballands.me/portfolio/coarsegrind.html" target="_blank">the official page</a> on my portfolio.
-
-Are you a fellow Hokie that wants to contribute to CoarseGrind? Maybe you're a student from another university that wants to implement CoarseGrind for your drop/add system? Submit a pull request today!
