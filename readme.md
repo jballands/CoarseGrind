@@ -30,7 +30,8 @@ This version of CoarseGrind is a beta, which means that it has not gone through 
 <li>Crash unexpectedly</li>
 <li>Deadlock itself</li>
 </ul>
-If any of the above occurs, <em>stop using v0.2-β immediately and switch to <a href="https://github.com/jballands/CoarseGrind/tree/0.1-Release" target="_blank">v0.1</a>!</em> Then, if possible, please send an email to <a href="mailto:jballands@gmail.com">jballands@gmail.com</a> and describe the problem you encountered with steps to reproduce the problem.
+If any of the above occurs, <em>stop using v0.2-β immediately and switch to <a href="https://github.com/jballands/CoarseGrind/tree/0.1-Release" target="_blank">v0.1</a>!</em> 
+
 <h3>About CoarseGrind</h3>
 CoarseGrind is a Python script that can help make the process of waiting for a seat to open in a class easier and less stressful. CoarseGrind uses a technique known as "web scraping" to browse HokieSPA and perform tasks like:
 <ul>
